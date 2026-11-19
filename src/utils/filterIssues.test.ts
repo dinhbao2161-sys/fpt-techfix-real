@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { removeVietnameseTones, filterIssues, validateIssueForm } from './filterIssues';
+import {
+  removeVietnameseTones,
+  filterIssues,
+  findSimilarIssuesByTitle,
+  validateIssueForm,
+} from './filterIssues';
+import { DEFAULT_ISSUES } from '../data/defaultIssues';
 import { Issue } from '../types/issue';
 
 const mockIssues: Issue[] = [
@@ -86,6 +92,26 @@ test('filterIssues matches case- and accent-insensitive query', () => {
   assert.equal(resultIphone[0].id, 'test-iphone-passcode');
 });
 
+test('filterIssues matches case- and accent-insensitive query in summary and symptoms', () => {
+  const bySummary = filterIssues(mockIssues, {
+    query: 'MO KHOA IPHONE',
+    platform: 'all',
+    category: 'all',
+    severity: 'all',
+  });
+  assert.equal(bySummary.length, 1);
+  assert.equal(bySummary[0].id, 'test-iphone-passcode');
+
+  const bySymptoms = filterIssues(mockIssues, {
+    query: 'KHONG THE VUOT MAN HINH',
+    platform: 'all',
+    category: 'all',
+    severity: 'all',
+  });
+  assert.equal(bySymptoms.length, 1);
+  assert.equal(bySymptoms[0].id, 'test-android-hang');
+});
+
 test('filterIssues filters by platform correctly', () => {
   const result = filterIssues(mockIssues, {
     query: '',
@@ -165,4 +191,17 @@ test('filterIssues matches multi-platform phone issues and fault code', () => {
     filterIssues([dualPhoneIssue], { query: '', platform: 'windows', category: 'all', severity: 'all' }).length,
     0
   );
+});
+
+test('findSimilarIssuesByTitle returns top 3 closest matching issues by title', () => {
+  const similarBattery = findSimilarIssuesByTitle(DEFAULT_ISSUES, 'pin bi phongg than may', 3);
+  assert.equal(similarBattery.length, 3);
+  assert.equal(similarBattery[0].id, 'PIN-10');
+
+  const similarTouch = findSimilarIssuesByTitle(DEFAULT_ISSUES, 'cam ung bi loan tu bamm', 3);
+  assert.equal(similarTouch.length, 3);
+  assert.equal(similarTouch[0].id, 'MAN-01');
+
+  const fallbackEmpty = findSimilarIssuesByTitle(DEFAULT_ISSUES, '', 3);
+  assert.equal(fallbackEmpty.length, 3);
 });

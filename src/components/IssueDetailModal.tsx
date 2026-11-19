@@ -15,9 +15,19 @@ import {
   Monitor,
   Laptop,
   Cpu,
-  Share2
+  Share2,
+  ShieldAlert,
+  DatabaseBackup,
+  CheckCircle2,
+  XCircle,
+  Store
 } from 'lucide-react';
-import { Issue } from '../types/issue';
+import { FixOutcome, Issue } from '../types/issue';
+import {
+  normalizeShopGuidance,
+  normalizeReferenceLinks,
+} from '../utils/issueReferences';
+import { normalizeFeedbackCounts } from '../utils/issueStats';
 
 interface IssueDetailModalProps {
   issue: Issue | null;
@@ -26,6 +36,8 @@ interface IssueDetailModalProps {
   onToggleBookmark: () => void;
   onVoteHelpful: (id: string) => void;
   hasVotedHelpful: boolean;
+  onVoteOutcome: (id: string, outcome: FixOutcome) => void;
+  selectedOutcome: FixOutcome | null;
   onShowToast: (msg: string) => void;
 }
 
@@ -36,12 +48,19 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   onToggleBookmark,
   onVoteHelpful,
   hasVotedHelpful,
+  onVoteOutcome,
+  selectedOutcome,
   onShowToast,
 }) => {
   const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>({});
   const [copied, setCopied] = useState(false);
 
   if (!issue) return null;
+
+  const shopGuidanceLines = normalizeShopGuidance(issue.khi_nao_mang_ra_tiem);
+  const referenceLinks = normalizeReferenceLinks(issue.nguon_tham_khao);
+  const feedbackCounts = normalizeFeedbackCounts(issue.feedbackCounts);
+  const hasSelectedOutcome = selectedOutcome !== null;
 
   const toggleStep = (stepNumber: number) => {
     setCompletedSteps((prev) => ({
@@ -186,6 +205,29 @@ Trích xuất từ Kho Kiến Thức Kỹ Thuật TechCare.`;
 
         {/* Scrollable Modal Body */}
         <div className="overflow-y-auto px-6 sm:px-8 py-7 space-y-7">
+          {/* Optional Top Safety & Backup Alerts */}
+          {(issue.canh_bao_an_toan === true || issue.can_sao_luu_truoc === true) && (
+            <div className="space-y-3">
+              {issue.canh_bao_an_toan === true && (
+                <div className="p-4 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/50 flex items-start gap-3 text-xs sm:text-sm text-[#FCA5A5]">
+                  <ShieldAlert className="w-5 h-5 text-[#EF4444] shrink-0 mt-0.5" />
+                  <span className="font-semibold leading-relaxed">
+                    Cảnh báo an toàn: nếu thấy bất thường, ngừng sử dụng và mang ra tiệm
+                  </span>
+                </div>
+              )}
+
+              {issue.can_sao_luu_truoc === true && (
+                <div className="p-4 rounded-2xl bg-[#EAB308]/10 border border-[#EAB308]/50 flex items-start gap-3 text-xs sm:text-sm text-[#FEF08A]">
+                  <DatabaseBackup className="w-5 h-5 text-[#EAB308] shrink-0 mt-0.5" />
+                  <span className="font-semibold leading-relaxed">
+                    Hãy sao lưu dữ liệu trước khi làm
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Main Title & Summary */}
           <div className="space-y-2.5">
             <h1 className="text-xl sm:text-2xl font-bold text-[#FFFFFF] leading-tight font-['Manrope']">
@@ -398,6 +440,30 @@ Trích xuất từ Kho Kiến Thức Kỹ Thuật TechCare.`;
             </div>
           </div>
 
+          {/* Red-bordered Shop Guidance immediately below steps */}
+          {shopGuidanceLines.length > 0 && (
+            <div className="p-5 rounded-2xl bg-[#EF4444]/10 border-2 border-[#EF4444]/60 space-y-2.5">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-[#EF4444] flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>Khi nào nên mang ra tiệm</span>
+              </h3>
+              {shopGuidanceLines.length === 1 ? (
+                <p className="text-xs sm:text-sm text-[#FECACA] leading-relaxed">
+                  {shopGuidanceLines[0]}
+                </p>
+              ) : (
+                <ul className="space-y-1.5 text-xs sm:text-sm text-[#FECACA]">
+                  {shopGuidanceLines.map((line, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="font-bold text-[#EF4444]">•</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           {/* Issue-level Safety Warnings */}
           {issue.warnings && issue.warnings.length > 0 && (
             <div className="p-5 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/30 space-y-2.5">
@@ -452,40 +518,126 @@ Trích xuất từ Kho Kiến Thức Kỹ Thuật TechCare.`;
               </a>
             </div>
           )}
+
+          {/* Multiple Reference Links at the bottom */}
+          {referenceLinks.length > 0 && (
+            <div className="p-5 rounded-2xl bg-[#121212] border border-white/[0.08] space-y-3">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-[#FFFFFF] flex items-center gap-2">
+                <ExternalLink className="w-4 h-4 text-[#F97316]" />
+                <span>Nguồn tham khảo</span>
+              </h3>
+              <ul className="space-y-2">
+                {referenceLinks.map((refItem, idx) => (
+                  <li key={`${refItem.url}-${idx}`}>
+                    <a
+                      href={refItem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs sm:text-sm text-[#F97316] hover:underline inline-flex items-center gap-1.5 break-all"
+                    >
+                      <span>{refItem.label}</span>
+                      <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Modal Sticky Bottom Action Footer */}
-        <div className="px-6 sm:px-8 py-4 border-t border-white/[0.08] bg-[#0A0A0A] flex items-center justify-between gap-3">
-          {/* Helpful vote */}
-          <button
-            onClick={() => onVoteHelpful(issue.id)}
-            disabled={hasVotedHelpful}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all border cursor-pointer ${
-              hasVotedHelpful
-                ? 'bg-[#F97316]/15 text-[#F97316] border-[#F97316]/40'
-                : 'bg-[#121212] text-[#A0A0A0] border-white/[0.08] hover:border-[#F97316]/30 hover:text-[#FFFFFF]'
-            }`}
-          >
-            <ThumbsUp className={`w-4 h-4 ${hasVotedHelpful ? 'fill-current' : ''}`} />
-            <span>{hasVotedHelpful ? 'Đã hữu ích' : 'Hữu ích'}</span>
-            <span className="font-mono font-bold">({issue.helpfulCount + (hasVotedHelpful ? 1 : 0)})</span>
-          </button>
+        <div className="px-5 sm:px-8 py-3.5 sm:py-4 border-t border-white/[0.08] bg-[#0A0A0A] flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Helpful vote */}
+              <button
+                onClick={() => onVoteHelpful(issue.id)}
+                disabled={hasVotedHelpful}
+                className={`px-3 sm:px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                  hasVotedHelpful
+                    ? 'bg-[#F97316]/15 text-[#F97316] border-[#F97316]/40 cursor-default'
+                    : 'bg-[#121212] text-[#A0A0A0] border-white/[0.08] hover:border-[#F97316]/30 hover:text-[#FFFFFF] cursor-pointer'
+                }`}
+              >
+                <ThumbsUp className={`w-3.5 h-3.5 ${hasVotedHelpful ? 'fill-current' : ''}`} />
+                <span>{hasVotedHelpful ? 'Đã hữu ích' : 'Hữu ích'}</span>
+                <span className="font-mono font-bold">({issue.helpfulCount})</span>
+              </button>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleCopyGuide}
-              className="px-4 py-2 rounded-xl border border-white/[0.08] bg-[#121212] text-[#A0A0A0] hover:text-[#FFFFFF] text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              {copied ? <Check className="w-4 h-4 text-[#F97316]" /> : <Copy className="w-4 h-4" />}
-              <span className="hidden sm:inline">{copied ? 'Đã chép' : 'Sao chép'}</span>
-            </button>
+              <span className="text-xs font-medium text-[#A0A0A0] pl-1">
+                Bạn đã sửa được lỗi chưa?
+              </span>
 
-            <button
-              onClick={onClose}
-              className="px-6 py-2 rounded-xl bg-[#F97316] hover:bg-[#ff8533] text-[#000000] text-xs sm:text-sm font-bold transition-all shadow-[0_2px_12px_rgba(249,115,22,0.25)] cursor-pointer"
-            >
-              Đóng cửa sổ
-            </button>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => onVoteOutcome(issue.id, 'fixed')}
+                  disabled={hasSelectedOutcome}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                    selectedOutcome === 'fixed'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 cursor-default'
+                      : hasSelectedOutcome
+                      ? 'bg-[#121212] text-[#666666] border-white/[0.05] opacity-60 cursor-not-allowed'
+                      : 'bg-[#121212] text-[#D4D4D4] border-white/[0.1] hover:border-emerald-500/50 hover:text-emerald-300 cursor-pointer'
+                  }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                  <span>Đã sửa được</span>
+                  <span className="font-mono font-bold">({feedbackCounts.fixed})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onVoteOutcome(issue.id, 'not_fixed')}
+                  disabled={hasSelectedOutcome}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                    selectedOutcome === 'not_fixed'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 cursor-default'
+                      : hasSelectedOutcome
+                      ? 'bg-[#121212] text-[#666666] border-white/[0.05] opacity-60 cursor-not-allowed'
+                      : 'bg-[#121212] text-[#D4D4D4] border-white/[0.1] hover:border-amber-500/50 hover:text-amber-300 cursor-pointer'
+                  }`}
+                >
+                  <XCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Chưa được</span>
+                  <span className="font-mono font-bold">({feedbackCounts.not_fixed})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onVoteOutcome(issue.id, 'need_shop')}
+                  disabled={hasSelectedOutcome}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                    selectedOutcome === 'need_shop'
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 cursor-default'
+                      : hasSelectedOutcome
+                      ? 'bg-[#121212] text-[#666666] border-white/[0.05] opacity-60 cursor-not-allowed'
+                      : 'bg-[#121212] text-[#D4D4D4] border-white/[0.1] hover:border-rose-500/50 hover:text-rose-300 cursor-pointer'
+                  }`}
+                >
+                  <Store className="w-3.5 h-3.5 shrink-0" />
+                  <span>Phải mang ra tiệm</span>
+                  <span className="font-mono font-bold">({feedbackCounts.need_shop})</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 ml-auto">
+              <button
+                onClick={handleCopyGuide}
+                className="px-3.5 py-2 rounded-xl border border-white/[0.08] bg-[#121212] text-[#A0A0A0] hover:text-[#FFFFFF] text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                {copied ? <Check className="w-4 h-4 text-[#F97316]" /> : <Copy className="w-4 h-4" />}
+                <span className="hidden sm:inline">{copied ? 'Đã chép' : 'Sao chép'}</span>
+              </button>
+
+              <button
+                onClick={onClose}
+                className="px-5 py-2 rounded-xl bg-[#F97316] hover:bg-[#ff8533] text-[#000000] text-xs font-bold transition-all shadow-[0_2px_12px_rgba(249,115,22,0.25)] cursor-pointer"
+              >
+                Đóng cửa sổ
+              </button>
+            </div>
           </div>
         </div>
       </div>

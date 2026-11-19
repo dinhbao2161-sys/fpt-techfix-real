@@ -2,9 +2,10 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import crypto from 'node:crypto';
 import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai';
-import type { Issue } from '../src/types/issue.ts';
+import type { FixOutcome, Issue } from '../src/types/issue.ts';
 import {
   getAllIssuesMerged,
+  incrementIssueFeedback,
   incrementIssueHelpful,
   saveCommunityIssue,
 } from './store.ts';
@@ -158,6 +159,21 @@ app.use(express.json({ limit: '15mb' }));
     res.json({ helpfulCount: nextCount });
   });
 
+  app.post('/api/issues/:id/feedback', (req: Request, res: Response) => {
+    const outcome = (req.body as { outcome?: unknown } | undefined)?.outcome;
+    if (outcome !== 'fixed' && outcome !== 'not_fixed' && outcome !== 'need_shop') {
+      res.status(400).json({ error: 'Lựa chọn phản hồi không hợp lệ.' });
+      return;
+    }
+
+    const nextCounts = incrementIssueFeedback(req.params.id, outcome as FixOutcome);
+    if (nextCounts === null) {
+      res.status(404).json({ error: 'Không tìm thấy bài viết.' });
+      return;
+    }
+    res.json({ feedbackCounts: nextCounts });
+  });
+
   // --- Gemini Camera Vision Diagnostic Scanner ---
   app.post('/api/diagnose-image', async (req: Request, res: Response) => {
     const body = (req.body ?? {}) as DiagnoseRequestBody;
@@ -186,27 +202,37 @@ app.use(express.json({ limit: '15mb' }));
       return;
     }
 
-    const catalog = Array.isArray(body.issuesCatalog) ? body.issuesCatalog.slice(0, 60) : [];
+    const catalog =
+      Array.isArray(body.issuesCatalog) && body.issuesCatalog.length > 0
+        ? body.issuesCatalog.slice(0, 200)
+        : getAllIssuesMerged().slice(0, 200).map((item) => ({
+            id: item.id,
+            title: item.title,
+            platform: item.platform,
+            category: item.category,
+            summary: item.summary,
+            tags: item.tags,
+          }));
     const catalogText = catalog
       .map(
         (item) =>
-          `- "${item.id}" [${item.platform}/${item.category}]: ${item.title}`
+          `- "${item.id}" [${item.platform}/${item.category}]: ${item.title} (${item.summary})`
       )
       .join('\n');
 
     const userNote = typeof body.note === 'string' && body.note.trim() ? body.note.trim() : 'Không có';
 
     const systemInstruction = `Bạn là bộ máy nhận diện lỗi thiết bị điện tử bằng thị giác (Gemini Vision) tích hợp trong TechCare.
-VAI TRÒ CỐT LÕI:
-1. Bạn CHỈ nhận diện lỗi qua hình ảnh (hệ điều hành, mã lỗi, thông báo màn hình, biểu tượng cảnh báo, hư hỏng phần cứng) và ĐỀ XUẤT MÔ-ĐUN LỖI từ danh mục TechCare để người dùng tự mở và xử lý trên web.
-2. Luôn đối chiếu với danh mục TechCare trước và điền 1-3 ID khớp nhất vào "matchedIssueIds".
-3. Nếu ảnh không phải thiết bị điện tử hoặc không có lỗi rõ ràng: đặt "isDeviceErrorDetected": false, "matchedIssueIds": [], giải thích ngắn gọn bằng tiếng Việt.
-4. CHỈ tạo "suggestedModule" (tối đa 3 bước ngắn gọn) khi "isDeviceErrorDetected" là true VÀ danh mục hiện có KHÔNG có mô-đun nào khớp. Nếu đã có ID khớp trong "matchedIssueIds", bỏ qua "suggestedModule".
-5. Viết tiếng Việt chuẩn xác, ngắn gọn, không sai chính tả.`;
+QUY TẮC BẮT BUỘC:
+1. CHỈ được đối chiếu hình ảnh và chọn TỐI ĐA 3 lỗi CÓ TRONG danh mục TechCare được cung cấp (điền vào "matchedIssues" gồm "id" chính xác trong danh mục và "confidence" từ 0 đến 100).
+2. TUYỆT ĐỐI KHÔNG tự viết cách sửa, KHÔNG bịa các bước khắc phục hay giải pháp mới ngoài danh mục. "visualObservations" và "reasonForRecommendation" chỉ mô tả dấu hiệu thấy trong ảnh và lý do chọn mã lỗi trong kho, KHÔNG viết hướng dẫn tự sửa.
+3. KIỂM TRA NGUY HIỂM KHẨN CẤP: Nếu ảnh có dấu hiệu PIN PHỒNG (máy/nắp lưng kênh, màn hình bung, pin phồng), VÀO NƯỚC (nước đọng, ngấm nước, hơi nước trong ống kính/màn hình), hoặc CHÁY KHÉT (vết cháy sém, chảy nhựa, bốc khói, chập cháy), BẮT BUỘC đặt "hasCriticalDanger": true và liệt kê dấu hiệu vào "criticalDangerReasons".
+4. Nếu ảnh không phải thiết bị điện tử, quá mờ hoặc không chắc chắn lỗi nào phù hợp: đặt "confidence" dưới 50 (ví dụ 20-45) và "matchedIssues": [].
+5. Viết tiếng Việt chuẩn xác, ngắn gọn.`;
 
     const promptText = `Phân tích lỗi trong ảnh thiết bị. Ghi chú thêm: ${userNote}
 
-Danh mục mô-đun TechCare:
+Danh mục lỗi CÓ SẴN trong TechCare (chỉ được chọn tối đa 3 ID từ danh sách này):
 ${catalogText || '(Trống)'}`;
 
     try {
@@ -242,56 +268,45 @@ ${catalogText || '(Trống)'}`;
               },
               detectedIssueTitle: {
                 type: Type.STRING,
-                description: 'Tên ngắn gọn của lỗi được nhận diện từ hình ảnh.',
+                description: 'Tên ngắn gọn của tình trạng được nhận diện từ hình ảnh.',
               },
               confidence: {
                 type: Type.INTEGER,
-                description: 'Độ tin cậy nhận diện từ 0 đến 100.',
+                description: 'Độ tin cậy tổng thể từ 0 đến 100.',
               },
               errorCodeOrText: {
                 type: Type.STRING,
                 description: 'Mã lỗi hoặc dòng thông báo chính đọc được từ màn hình (nếu có).',
               },
+              hasCriticalDanger: {
+                type: Type.BOOLEAN,
+                description: 'True nếu ảnh có pin phồng, vào nước hoặc cháy khét.',
+              },
+              criticalDangerReasons: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: 'Các dấu hiệu nguy hiểm nghiêm trọng thấy trong ảnh (pin phồng, vào nước, cháy khét).',
+              },
               visualObservations: {
                 type: Type.ARRAY,
                 items: { type: Type.STRING },
-                description: '2-3 dấu hiệu trực quan mà Gemini quan sát được trong ảnh.',
+                description: '2-3 dấu hiệu trực quan quan sát được trong ảnh (không ghi bước sửa).',
               },
-              matchedIssueIds: {
+              matchedIssues: {
                 type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: '1-3 ID mô-đun khớp nhất từ danh mục TechCare.',
+                description: 'Tối đa 3 lỗi CÓ SẴN trong danh mục TechCare khớp với ảnh, kèm độ tin cậy (%).',
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING, description: 'ID chính xác trong danh mục TechCare.' },
+                    confidence: { type: Type.INTEGER, description: 'Độ tin cậy (%) cho lỗi này từ 0 đến 100.' },
+                  },
+                  required: ['id', 'confidence'],
+                },
               },
               reasonForRecommendation: {
                 type: Type.STRING,
-                description: '1 câu giải thích vì sao đề xuất các mô-đun này.',
-              },
-              suggestedModule: {
-                type: Type.OBJECT,
-                description: 'Chỉ điền khi matchedIssueIds rỗng và cần tạo mô-đun mới.',
-                properties: {
-                  title: { type: Type.STRING },
-                  platform: { type: Type.STRING, description: 'iphone | android | windows | mac | hardware' },
-                  category: { type: Type.STRING, description: 'system | screen | battery | network | hardware | security' },
-                  severity: { type: Type.STRING, description: 'easy | medium | hard' },
-                  estimatedTime: { type: Type.STRING },
-                  summary: { type: Type.STRING },
-                  symptoms: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  causes: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  steps: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        title: { type: Type.STRING },
-                        instructions: { type: Type.STRING },
-                      },
-                      required: ['title', 'instructions'],
-                    },
-                  },
-                  tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                },
-                required: ['title', 'platform', 'category', 'severity', 'summary', 'steps'],
+                description: '1 câu giải thích ngắn vì sao ảnh khớp với các ID trong danh mục (không viết cách sửa).',
               },
             },
             required: [
@@ -299,8 +314,10 @@ ${catalogText || '(Trống)'}`;
               'detectedPlatform',
               'detectedIssueTitle',
               'confidence',
+              'hasCriticalDanger',
+              'criticalDangerReasons',
               'visualObservations',
-              'matchedIssueIds',
+              'matchedIssues',
               'reasonForRecommendation',
             ],
           },

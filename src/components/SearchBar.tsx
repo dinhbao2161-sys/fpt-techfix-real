@@ -1,28 +1,25 @@
 import React, { useRef } from 'react';
 import { Search, X, Sparkles } from 'lucide-react';
+import { Issue } from '../types/issue';
 
 interface SearchBarProps {
   value: string;
   onChange: (val: string) => void;
   resultCount: number;
   totalCount: number;
+  quickIssues: Issue[];
+  onSelectQuickIssue: (issue: Issue) => void;
+  selectedIssueId?: string | null;
 }
-
-const QUICK_SUGGESTIONS = [
-  'Sạc không vào',
-  'Độ ẩm cổng sạc',
-  'Pin tụt nhanh',
-  'Loạn cảm ứng',
-  'Mất sóng',
-  'Quảng cáo popup',
-  'Rơi vào nước'
-];
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChange,
   resultCount,
-  totalCount
+  totalCount,
+  quickIssues,
+  onSelectQuickIssue,
+  selectedIssueId,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -67,29 +64,33 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         </div>
       </div>
 
-      {/* Conversational Quick Search Chips - Black & Orange */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
-        <span className="text-[#A0A0A0] font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5 shrink-0 pl-1">
-          <Sparkles className="w-3 h-3 text-[#F97316]" />
-          <span>Gợi ý nhanh:</span>
-        </span>
-        {QUICK_SUGGESTIONS.map((tag) => {
-          const isSelected = value.toLowerCase() === tag.toLowerCase();
-          return (
-            <button
-              key={tag}
-              onClick={() => onChange(tag)}
-              className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all text-xs font-medium border cursor-pointer ${
-                isSelected
-                  ? 'bg-[#F97316]/20 border-[#F97316]/70 text-[#F97316] font-semibold'
-                  : 'bg-[#0A0A0A] text-[#A0A0A0] border-white/[0.08] hover:border-[#F97316]/40 hover:text-[#FFFFFF] hover:bg-[#121212]'
-              }`}
-            >
-              {tag}
-            </button>
-          );
-        })}
-      </div>
+      {/* Dynamic Quick Suggestion Chips (first 7 issues in dataset) */}
+      {quickIssues.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-[#A0A0A0] font-mono text-[11px] uppercase tracking-wider flex items-center gap-1.5 shrink-0 pl-1">
+            <Sparkles className="w-3 h-3 text-[#F97316]" />
+            <span>Gợi ý nhanh:</span>
+          </span>
+          {quickIssues.map((issue) => {
+            const isSelected = selectedIssueId === issue.id;
+            return (
+              <button
+                key={issue.id}
+                type="button"
+                onClick={() => onSelectQuickIssue(issue)}
+                title={issue.title}
+                className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all text-xs font-medium border cursor-pointer shrink-0 ${
+                  isSelected
+                    ? 'bg-[#F97316]/20 border-[#F97316]/70 text-[#F97316] font-semibold'
+                    : 'bg-[#0A0A0A] text-[#A0A0A0] border-white/[0.08] hover:border-[#F97316]/40 hover:text-[#FFFFFF] hover:bg-[#121212]'
+                }`}
+              >
+                {issue.title}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

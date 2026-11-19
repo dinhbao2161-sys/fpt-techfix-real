@@ -4,12 +4,15 @@ import {
   Plus,
   Bookmark,
   Camera,
+  BarChart3,
 } from 'lucide-react';
 import { Platform } from '../types/issue';
 
 interface HeaderProps {
   currentPlatform: Platform;
   onSelectPlatform: (platform: Platform) => void;
+  activeView: 'catalog' | 'stats';
+  onSelectView: (view: 'catalog' | 'stats') => void;
   onOpenAddModal: () => void;
   onOpenScanner: () => void;
   bookmarkCount: number;
@@ -20,18 +23,28 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   currentPlatform,
   onSelectPlatform,
+  activeView,
+  onSelectView,
   onOpenAddModal,
   onOpenScanner,
   bookmarkCount,
   showOnlyBookmarks,
   onToggleBookmarks,
 }) => {
+  const isCatalogView = activeView === 'catalog';
+
+  const handleSelectPlatformTab = (platform: Platform) => {
+    onSelectView('catalog');
+    onSelectPlatform(platform);
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full bg-[#000000] border-b border-white/[0.08] transition-colors">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4">
         {/* Zone 1: Brand Wordmark */}
         <button
           onClick={() => {
+            onSelectView('catalog');
             onSelectPlatform('all');
             if (showOnlyBookmarks) onToggleBookmarks();
           }}
@@ -53,78 +66,108 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Zone 2: Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-[11px] xl:text-xs uppercase tracking-wider font-semibold text-[#A0A0A0]">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-5 text-[11px] xl:text-xs uppercase tracking-wider font-semibold text-[#A0A0A0]">
           <button
-            onClick={() => onSelectPlatform('all')}
+            onClick={() => handleSelectPlatformTab('all')}
             className={`py-2 relative transition-colors whitespace-nowrap hover:text-[#FFFFFF] cursor-pointer ${
-              currentPlatform === 'all' && !showOnlyBookmarks ? 'text-[#F97316]' : ''
+              isCatalogView && currentPlatform === 'all' && !showOnlyBookmarks ? 'text-[#F97316]' : ''
             }`}
           >
             Tất cả thiết bị
-            {currentPlatform === 'all' && !showOnlyBookmarks && (
+            {isCatalogView && currentPlatform === 'all' && !showOnlyBookmarks && (
               <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F97316] rounded-full" />
             )}
           </button>
           <button
-            onClick={() => onSelectPlatform('iphone')}
+            onClick={() => handleSelectPlatformTab('iphone')}
             className={`py-2 relative transition-colors whitespace-nowrap hover:text-[#FFFFFF] cursor-pointer ${
-              currentPlatform === 'iphone' ? 'text-[#F97316]' : ''
+              isCatalogView && currentPlatform === 'iphone' ? 'text-[#F97316]' : ''
             }`}
           >
             iPhone & iOS
-            {currentPlatform === 'iphone' && (
+            {isCatalogView && currentPlatform === 'iphone' && (
               <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F97316] rounded-full" />
             )}
           </button>
           <button
-            onClick={() => onSelectPlatform('android')}
+            onClick={() => handleSelectPlatformTab('android')}
             className={`py-2 relative transition-colors whitespace-nowrap hover:text-[#FFFFFF] cursor-pointer ${
-              currentPlatform === 'android' ? 'text-[#F97316]' : ''
+              isCatalogView && currentPlatform === 'android' ? 'text-[#F97316]' : ''
             }`}
           >
             Android
-            {currentPlatform === 'android' && (
+            {isCatalogView && currentPlatform === 'android' && (
               <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F97316] rounded-full" />
             )}
           </button>
           <button
-            onClick={() => onSelectPlatform('windows')}
+            onClick={() => handleSelectPlatformTab('windows')}
             className={`py-2 relative transition-colors whitespace-nowrap hover:text-[#FFFFFF] cursor-pointer ${
-              currentPlatform === 'windows' ? 'text-[#F97316]' : ''
+              isCatalogView && currentPlatform === 'windows' ? 'text-[#F97316]' : ''
             }`}
           >
             Windows PC
-            {currentPlatform === 'windows' && (
+            {isCatalogView && currentPlatform === 'windows' && (
               <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F97316] rounded-full" />
             )}
           </button>
           <button
-            onClick={() => onSelectPlatform('mac')}
+            onClick={() => handleSelectPlatformTab('mac')}
             className={`py-2 relative transition-colors whitespace-nowrap hover:text-[#FFFFFF] cursor-pointer ${
-              currentPlatform === 'mac' ? 'text-[#F97316]' : ''
+              isCatalogView && currentPlatform === 'mac' ? 'text-[#F97316]' : ''
             }`}
           >
             macOS
-            {currentPlatform === 'mac' && (
+            {isCatalogView && currentPlatform === 'mac' && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F97316] rounded-full" />
+            )}
+          </button>
+          <button
+            onClick={() => onSelectView(activeView === 'stats' ? 'catalog' : 'stats')}
+            className={`py-2 relative transition-colors whitespace-nowrap hover:text-[#FFFFFF] cursor-pointer flex items-center gap-1.5 ${
+              activeView === 'stats' ? 'text-[#F97316]' : ''
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Thống kê</span>
+            {activeView === 'stats' && (
               <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F97316] rounded-full" />
             )}
           </button>
         </nav>
 
-        {/* Zone 3: Bookmarks + Quét lỗi AI + Đóng góp giải pháp */}
+        {/* Zone 3: Stats (mobile/tablet) + Bookmarks + Quét lỗi AI + Đóng góp giải pháp */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Mobile / Tablet Stats Button */}
+          <button
+            onClick={() => onSelectView(activeView === 'stats' ? 'catalog' : 'stats')}
+            className={`lg:hidden h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-medium transition-all border cursor-pointer ${
+              activeView === 'stats'
+                ? 'bg-[#F97316]/15 text-[#F97316] border-[#F97316]/40'
+                : 'bg-[#0E0E0E] text-[#A0A0A0] border-white/[0.08] hover:text-[#FFFFFF] hover:border-white/[0.2]'
+            }`}
+            title="Thống kê"
+            aria-label="Thống kê"
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Thống kê</span>
+          </button>
+
           {/* Saved Articles Toggle */}
           <button
-            onClick={onToggleBookmarks}
+            onClick={() => {
+              onSelectView('catalog');
+              onToggleBookmarks();
+            }}
             className={`h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-medium transition-all border cursor-pointer ${
-              showOnlyBookmarks
+              isCatalogView && showOnlyBookmarks
                 ? 'bg-[#F97316]/15 text-[#F97316] border-[#F97316]/40'
                 : 'bg-[#0E0E0E] text-[#A0A0A0] border-white/[0.08] hover:text-[#FFFFFF] hover:border-white/[0.2]'
             }`}
             title="Mục đã lưu"
             aria-label="Danh sách mục đã lưu"
           >
-            <Bookmark className={`w-3.5 h-3.5 ${showOnlyBookmarks ? 'fill-current text-[#F97316]' : ''}`} />
+            <Bookmark className={`w-3.5 h-3.5 ${isCatalogView && showOnlyBookmarks ? 'fill-current text-[#F97316]' : ''}`} />
             <span className="hidden md:inline">Đã lưu</span>
             {bookmarkCount > 0 && (
               <span className="text-[10px] px-1 rounded font-mono font-bold bg-[#F97316]/20 text-[#F97316]">

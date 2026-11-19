@@ -11,6 +11,14 @@ export type Category =
 
 export type Severity = 'easy' | 'medium' | 'hard';
 
+export type FixOutcome = 'fixed' | 'not_fixed' | 'need_shop';
+
+export interface IssueFeedbackCounts {
+  fixed: number;
+  not_fixed: number;
+  need_shop: number;
+}
+
 export interface StepGuide {
   stepNumber: number;
   title: string;
@@ -35,11 +43,16 @@ export interface Issue {
   requiredTools?: string[];
   warnings?: string[];
   seeTechnicianIf?: string[];
+  can_sao_luu_truoc?: boolean;
+  canh_bao_an_toan?: boolean;
+  khi_nao_mang_ra_tiem?: string | string[];
+  nguon_tham_khao?: (string | { label?: string; title?: string; url: string })[];
   tags: string[];
   sourceUrl?: string;
   author: string;
   createdAt: string;
   helpfulCount: number;
+  feedbackCounts?: IssueFeedbackCounts;
   isUserSubmitted?: boolean;
 }
 

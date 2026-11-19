@@ -10,6 +10,7 @@ export function removeVietnameseTones(str: string): string {
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
     .toLowerCase()
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -45,7 +46,7 @@ export function filterIssues(issues: Issue[], options: IssueFilterOptions): Issu
       return false;
     }
 
-    // 5. Query search (matched against code, title, summary, symptoms, causes, tags, and step titles)
+    // 5. Query search (case- and accent-insensitive across code, title, summary, symptoms, causes, tags, and steps)
     if (cleanQuery) {
       const matchCode = issue.code ? removeVietnameseTones(issue.code).includes(cleanQuery) : false;
       const matchTitle = removeVietnameseTones(issue.title).includes(cleanQuery);
@@ -66,6 +67,102 @@ export function filterIssues(issues: Issue[], options: IssueFilterOptions): Issu
 
     return true;
   });
+}
+
+function getBigrams(str: string): string[] {
+  const compact = str.replace(/\s+/g, '');
+  if (compact.length < 2) return compact ? [compact] : [];
+  const bigrams: string[] = [];
+  for (let i = 0; i < compact.length - 1; i++) {
+    bigrams.push(compact.slice(i, i + 2));
+  }
+  return bigrams;
+}
+
+function diceSimilarity(a: string, b: string): number {
+  const bigramsA = getBigrams(a);
+  const bigramsB = getBigrams(b);
+  if (bigramsA.length === 0 || bigramsB.length === 0) return 0;
+
+  const counts = new Map<string, number>();
+  for (const bg of bigramsA) {
+    counts.set(bg, (counts.get(bg) ?? 0) + 1);
+  }
+
+  let intersection = 0;
+  for (const bg of bigramsB) {
+    const count = counts.get(bg) ?? 0;
+    if (count > 0) {
+      intersection++;
+      counts.set(bg, count - 1);
+    }
+  }
+
+  return (2 * intersection) / (bigramsA.length + bigramsB.length);
+}
+
+/**
+ * Return up to `limit` issues whose titles are most similar to `query`
+ * (case- and accent-insensitive), used when a search yields 0 exact matches.
+ */
+export function findSimilarIssuesByTitle(
+  issues: Issue[],
+  query: string,
+  limit = 3
+): Issue[] {
+  if (issues.length === 0 || limit <= 0) {
+    return [];
+  }
+
+  const cleanQuery = removeVietnameseTones(query);
+  if (!cleanQuery) {
+    return issues.slice(0, limit);
+  }
+
+  const queryTokens = cleanQuery.split(' ').filter((t) => t.length >= 2);
+
+  const scored = issues.map((issue, index) => {
+    const cleanTitle = removeVietnameseTones(issue.title);
+    const titleTokens = cleanTitle.split(' ').filter(Boolean);
+
+    let score = 0;
+
+    if (cleanTitle.includes(cleanQuery)) {
+      score += 50;
+    }
+
+    for (const qToken of queryTokens) {
+      if (titleTokens.includes(qToken)) {
+        score += 12;
+      } else if (titleTokens.some((t) => t.includes(qToken) || qToken.includes(t))) {
+        score += 6;
+      } else {
+        // Check closest single-word Dice similarity for minor typos
+        let bestWordSim = 0;
+        for (const tToken of titleTokens) {
+          const sim = diceSimilarity(qToken, tToken);
+          if (sim > bestWordSim) bestWordSim = sim;
+        }
+        if (bestWordSim >= 0.45) {
+          score += bestWordSim * 8;
+        }
+      }
+    }
+
+    score += diceSimilarity(cleanQuery, cleanTitle) * 20;
+
+    return { issue, score, index };
+  });
+
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (b.issue.helpfulCount !== a.issue.helpfulCount) {
+      return b.issue.helpfulCount - a.issue.helpfulCount;
+    }
+    return a.index - b.index;
+  });
+
+  return scored.slice(0, limit).map((entry) => entry.issue);
 }
 
 /**

@@ -2,13 +2,31 @@ import { Issue } from '../types/issue';
 import {
   DetectedPlatform,
   GeminiDiagnosisResult,
-  SuggestedModuleDraft,
+  MatchedIssueCandidate,
+  MatchedIssueResult,
 } from '../types/diagnosis';
 import { removeVietnameseTones } from './filterIssues';
 
 const VALID_PLATFORMS: DetectedPlatform[] = ['iphone', 'android', 'windows', 'mac', 'hardware'];
-const VALID_CATEGORIES = ['system', 'screen', 'battery', 'network', 'hardware', 'security'] as const;
-const VALID_SEVERITIES = ['easy', 'medium', 'hard'] as const;
+
+export const LOW_CONFIDENCE_THRESHOLD = 50;
+
+const CRITICAL_DANGER_KEYWORDS = [
+  'pin phong',
+  'phong pin',
+  'pin bi phong',
+  'vao nuoc',
+  'roi vao nuoc',
+  'ngam nuoc',
+  'tham nuoc',
+  'chay khet',
+  'mui khet',
+  'chay sem',
+  'chay no',
+  'boc khoi',
+  'tia lua',
+  'chay chan',
+];
 
 export function normalizePlatform(val: unknown): DetectedPlatform {
   if (typeof val === 'string' && (VALID_PLATFORMS as string[]).includes(val.toLowerCase())) {
@@ -17,37 +35,15 @@ export function normalizePlatform(val: unknown): DetectedPlatform {
   return 'hardware';
 }
 
-export function normalizeCategory(
-  val: unknown
-): 'system' | 'screen' | 'battery' | 'network' | 'hardware' | 'security' {
-  if (typeof val === 'string') {
-    const lower = val.toLowerCase().trim();
-    if ((VALID_CATEGORIES as readonly string[]).includes(lower)) {
-      return lower as 'system' | 'screen' | 'battery' | 'network' | 'hardware' | 'security';
-    }
-    if (lower.includes('màn hình') || lower.includes('hiển thị') || lower.includes('cảm ứng')) return 'screen';
-    if (lower.includes('pin') || lower.includes('nguồn') || lower.includes('sạc')) return 'battery';
-    if (lower.includes('mạng') || lower.includes('wifi') || lower.includes('wi-fi') || lower.includes('sim')) return 'network';
-    if (lower.includes('bảo mật') || lower.includes('mật khẩu') || lower.includes('khóa')) return 'security';
-    if (lower.includes('phần cứng') || lower.includes('linh kiện')) return 'hardware';
-  }
-  return 'system';
-}
-
-export function normalizeSeverity(val: unknown): 'easy' | 'medium' | 'hard' {
-  if (typeof val === 'string') {
-    const lower = val.toLowerCase().trim();
-    if ((VALID_SEVERITIES as readonly string[]).includes(lower)) {
-      return lower as 'easy' | 'medium' | 'hard';
-    }
-    if (lower.includes('dễ') || lower.includes('cơ bản')) return 'easy';
-    if (lower.includes('cao') || lower.includes('khó') || lower.includes('chuyên sâu')) return 'hard';
-  }
-  return 'medium';
+function clampConfidence(value: unknown, fallback = 0): number {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(num)));
 }
 
 /**
  * Parse and sanitize JSON returned by Gemini Vision.
+ * Strictly enforces catalog-only matches (max 3) and critical safety flags without self-written fixes.
  */
 export function parseDiagnosisPayload(rawText: string): GeminiDiagnosisResult {
   const stripped = rawText
@@ -58,63 +54,50 @@ export function parseDiagnosisPayload(rawText: string): GeminiDiagnosisResult {
 
   const parsed = JSON.parse(stripped) as Record<string, unknown>;
 
-  const confidenceRaw = Number(parsed.confidence);
-  const confidence = Number.isFinite(confidenceRaw)
-    ? Math.max(0, Math.min(100, Math.round(confidenceRaw)))
-    : 75;
+  const confidence = clampConfidence(parsed.confidence, 0);
 
   const visualObservations = Array.isArray(parsed.visualObservations)
-    ? parsed.visualObservations.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    ? parsed.visualObservations.filter(
+        (item): item is string => typeof item === 'string' && item.trim().length > 0
+      )
     : [];
 
-  const matchedIssueIds = Array.isArray(parsed.matchedIssueIds)
-    ? parsed.matchedIssueIds.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+  const criticalDangerReasons = Array.isArray(parsed.criticalDangerReasons)
+    ? parsed.criticalDangerReasons.filter(
+        (item): item is string => typeof item === 'string' && item.trim().length > 0
+      )
     : [];
 
-  let suggestedModule: SuggestedModuleDraft | undefined;
-  if (parsed.suggestedModule && typeof parsed.suggestedModule === 'object') {
-    const draft = parsed.suggestedModule as Record<string, unknown>;
-    const rawSteps = Array.isArray(draft.steps) ? draft.steps : [];
-    const steps = rawSteps
-      .filter((s): s is Record<string, unknown> => Boolean(s && typeof s === 'object'))
-      .map((s) => ({
-        title: typeof s.title === 'string' && s.title.trim() ? s.title.trim() : 'Kiểm tra và xử lý bước tiếp theo',
-        instructions:
-          typeof s.instructions === 'string' && s.instructions.trim()
-            ? s.instructions.trim()
-            : 'Thực hiện kiểm tra thiết bị theo hướng dẫn chuẩn của TechCare.',
-        tip: typeof s.tip === 'string' && s.tip.trim() ? s.tip.trim() : undefined,
-        warning: typeof s.warning === 'string' && s.warning.trim() ? s.warning.trim() : undefined,
-      }));
+  const seenIds = new Set<string>();
+  const matchedIssues: MatchedIssueCandidate[] = [];
 
-    if (typeof draft.title === 'string' && draft.title.trim() && steps.length > 0) {
-      suggestedModule = {
-        title: draft.title.trim(),
-        platform: normalizePlatform(draft.platform ?? parsed.detectedPlatform),
-        category: normalizeCategory(draft.category),
-        severity: normalizeSeverity(draft.severity),
-        estimatedTime:
-          typeof draft.estimatedTime === 'string' && draft.estimatedTime.trim()
-            ? draft.estimatedTime.trim()
-            : '10 - 15 phút',
-        summary:
-          typeof draft.summary === 'string' && draft.summary.trim()
-            ? draft.summary.trim()
-            : 'Mô-đun khắc phục sự cố được đề xuất từ kết quả nhận diện hình ảnh.',
-        symptoms: Array.isArray(draft.symptoms)
-          ? draft.symptoms.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-          : visualObservations,
-        causes: Array.isArray(draft.causes)
-          ? draft.causes.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-          : ['Xung đột phần mềm hoặc lỗi phần cứng phát hiện qua hình ảnh'],
-        requiredTools: Array.isArray(draft.requiredTools)
-          ? draft.requiredTools.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-          : undefined,
-        steps,
-        tags: Array.isArray(draft.tags)
-          ? draft.tags.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-          : [],
-      };
+  if (Array.isArray(parsed.matchedIssues)) {
+    for (const entry of parsed.matchedIssues) {
+      if (!entry || typeof entry !== 'object') continue;
+      const obj = entry as Record<string, unknown>;
+      const id = typeof obj.id === 'string' ? obj.id.trim() : '';
+      if (!id || seenIds.has(id)) continue;
+      seenIds.add(id);
+      matchedIssues.push({
+        id,
+        confidence: clampConfidence(obj.confidence, confidence),
+      });
+      if (matchedIssues.length >= 3) break;
+    }
+  }
+
+  // Fallback compatibility if model only populated matchedIssueIds
+  if (matchedIssues.length === 0 && Array.isArray(parsed.matchedIssueIds)) {
+    for (const rawId of parsed.matchedIssueIds) {
+      if (typeof rawId !== 'string') continue;
+      const id = rawId.trim();
+      if (!id || seenIds.has(id)) continue;
+      seenIds.add(id);
+      matchedIssues.push({
+        id,
+        confidence,
+      });
+      if (matchedIssues.length >= 3) break;
     }
   }
 
@@ -124,46 +107,90 @@ export function parseDiagnosisPayload(rawText: string): GeminiDiagnosisResult {
     detectedIssueTitle:
       typeof parsed.detectedIssueTitle === 'string' && parsed.detectedIssueTitle.trim()
         ? parsed.detectedIssueTitle.trim()
-        : 'Không xác định rõ sự cố thiết bị',
+        : 'Chưa xác định rõ sự cố thiết bị',
     confidence,
     visualObservations,
     errorCodeOrText:
       typeof parsed.errorCodeOrText === 'string' && parsed.errorCodeOrText.trim()
         ? parsed.errorCodeOrText.trim()
         : undefined,
-    matchedIssueIds,
+    hasCriticalDanger: parsed.hasCriticalDanger === true,
+    criticalDangerReasons,
+    matchedIssues,
+    matchedIssueIds: matchedIssues.map((m) => m.id),
     reasonForRecommendation:
       typeof parsed.reasonForRecommendation === 'string' && parsed.reasonForRecommendation.trim()
         ? parsed.reasonForRecommendation.trim()
-        : 'Gemini đã phân tích hình ảnh và đối chiếu với kho mô-đun sửa lỗi TechCare.',
-    suggestedModule,
+        : 'Gemini đã phân tích hình ảnh và đối chiếu với kho lỗi có sẵn của TechCare.',
   };
 }
 
 /**
- * Resolve matched TechCare modules from Gemini's matchedIssueIds,
- * falling back to keyword/platform scoring if matchedIssueIds yields fewer than 1 result.
+ * Determine whether the scanned image indicates swollen battery, water ingress, or burning/scorch danger.
  */
-export function resolveMatchedIssues(
+export function detectCriticalDanger(
+  diagnosis: GeminiDiagnosisResult,
+  matchedResults: MatchedIssueResult[] = []
+): boolean {
+  if (diagnosis.hasCriticalDanger) {
+    return true;
+  }
+
+  const combinedText = removeVietnameseTones(
+    [
+      diagnosis.detectedIssueTitle,
+      diagnosis.errorCodeOrText ?? '',
+      diagnosis.reasonForRecommendation,
+      ...diagnosis.visualObservations,
+      ...diagnosis.criticalDangerReasons,
+    ].join(' ')
+  );
+
+  if (CRITICAL_DANGER_KEYWORDS.some((kw) => combinedText.includes(kw))) {
+    return true;
+  }
+
+  // Also trigger if PIN-10 (pin phồng) or CUNG-04 (vào nước) was matched with confidence >= 50
+  return matchedResults.some(
+    (entry) =>
+      entry &&
+      entry.issue &&
+      entry.confidence >= LOW_CONFIDENCE_THRESHOLD &&
+      (entry.issue.id === 'PIN-10' ||
+        entry.issue.code === 'PIN-10' ||
+        entry.issue.id === 'CUNG-04' ||
+        entry.issue.code === 'CUNG-04')
+  );
+}
+
+/**
+ * Resolve up to 3 matched issues that strictly exist in the app's data, along with confidence (%).
+ * Returns an empty array if overall confidence is below 50% or no device error is detected.
+ */
+export function resolveMatchedIssuesWithConfidence(
   diagnosis: GeminiDiagnosisResult,
   allIssues: Issue[],
   maxResults = 3
-): Issue[] {
-  if (!diagnosis.isDeviceErrorDetected) {
+): MatchedIssueResult[] {
+  if (!diagnosis.isDeviceErrorDetected || diagnosis.confidence < LOW_CONFIDENCE_THRESHOLD) {
     return [];
   }
 
+  const limit = Math.max(1, Math.min(3, maxResults));
   const issueById = new Map(allIssues.map((issue) => [issue.id, issue]));
-  const directMatches: Issue[] = [];
+  const directMatches: MatchedIssueResult[] = [];
   const seenIds = new Set<string>();
 
-  for (const id of diagnosis.matchedIssueIds) {
-    const found = issueById.get(id);
+  for (const candidate of diagnosis.matchedIssues) {
+    const found = issueById.get(candidate.id);
     if (found && !seenIds.has(found.id)) {
-      directMatches.push(found);
+      directMatches.push({
+        issue: found,
+        confidence: clampConfidence(candidate.confidence, diagnosis.confidence),
+      });
       seenIds.add(found.id);
     }
-    if (directMatches.length >= maxResults) {
+    if (directMatches.length >= limit) {
       return directMatches;
     }
   }
@@ -172,7 +199,7 @@ export function resolveMatchedIssues(
     return directMatches;
   }
 
-  // Keyword & platform fallback if Gemini didn't pick exact IDs
+  // Keyword & platform fallback strictly within existing app issues
   const searchTokens = removeVietnameseTones(
     [
       diagnosis.detectedIssueTitle,
@@ -201,41 +228,21 @@ export function resolveMatchedIssues(
     })
     .filter((entry) => entry.score >= 4)
     .sort((a, b) => b.score - a.score)
-    .slice(0, maxResults)
-    .map((entry) => entry.issue);
+    .slice(0, limit)
+    .map((entry) => ({
+      issue: entry.issue,
+      confidence: diagnosis.confidence,
+    }));
 
   return scored;
 }
 
-/**
- * Convert a Gemini-proposed module draft into a full TechCare Issue ready to open and fix on the web.
- */
-export function buildModuleFromSuggestion(draft: SuggestedModuleDraft): Issue {
-  return {
-    id: `gemini-module-${Date.now()}`,
-    title: draft.title,
-    platform: draft.platform,
-    category: draft.category,
-    severity: draft.severity,
-    estimatedTime: draft.estimatedTime,
-    summary: draft.summary,
-    symptoms: draft.symptoms.length > 0 ? draft.symptoms : ['Phát hiện lỗi qua nhận diện hình ảnh'],
-    causes:
-      draft.causes.length > 0
-        ? draft.causes
-        : ['Lỗi phát sinh trên phần mềm hoặc linh kiện thiết bị'],
-    steps: draft.steps.map((s, idx) => ({
-      stepNumber: idx + 1,
-      title: s.title,
-      instructions: s.instructions,
-      tip: s.tip,
-      warning: s.warning,
-    })),
-    requiredTools: draft.requiredTools,
-    tags: Array.from(new Set([...draft.tags, 'gemini-scan', draft.platform])),
-    author: 'Mô-đun đề xuất từ Gemini Vision',
-    createdAt: new Date().toISOString().split('T')[0],
-    helpfulCount: 1,
-    isUserSubmitted: true,
-  };
+export function resolveMatchedIssues(
+  diagnosis: GeminiDiagnosisResult,
+  allIssues: Issue[],
+  maxResults = 3
+): Issue[] {
+  return resolveMatchedIssuesWithConfidence(diagnosis, allIssues, maxResults).map(
+    (item) => item.issue
+  );
 }

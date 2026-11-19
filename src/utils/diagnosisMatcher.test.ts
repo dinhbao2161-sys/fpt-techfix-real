@@ -4,32 +4,39 @@ import { DEFAULT_ISSUES } from '../data/defaultIssues';
 import {
   parseDiagnosisPayload,
   resolveMatchedIssues,
-  buildModuleFromSuggestion,
+  resolveMatchedIssuesWithConfidence,
+  detectCriticalDanger,
 } from './diagnosisMatcher';
 
-test('parseDiagnosisPayload strips markdown fences and clamps confidence', () => {
+test('parseDiagnosisPayload strips markdown fences, clamps confidence, and caps matches at 3', () => {
   const raw = `\`\`\`json
   {
     "isDeviceErrorDetected": true,
-    "detectedPlatform": "windows",
-    "detectedIssueTitle": "Màn hình xanh BSOD CRITICAL_PROCESS_DIED",
+    "detectedPlatform": "iphone",
+    "detectedIssueTitle": "Lỗi pin và cổng sạc",
     "confidence": 125,
-    "visualObservations": ["Màn hình xanh dương", "Mã lỗi CRITICAL_PROCESS_DIED"],
-    "errorCodeOrText": "CRITICAL_PROCESS_DIED",
-    "matchedIssueIds": ["windows-bsod-blue-screen"],
-    "reasonForRecommendation": "Phát hiện giao diện Stop Code BSOD của Windows."
+    "visualObservations": ["Thông báo phụ kiện hoặc cổng sạc"],
+    "hasCriticalDanger": false,
+    "criticalDangerReasons": [],
+    "matchedIssues": [
+      { "id": "PIN-01", "confidence": 92 },
+      { "id": "PIN-02", "confidence": 81 },
+      { "id": "PIN-03", "confidence": 65 },
+      { "id": "PIN-04", "confidence": 55 }
+    ],
+    "reasonForRecommendation": "Đối chiếu với kho lỗi TechCare."
   }
   \`\`\``;
 
   const parsed = parseDiagnosisPayload(raw);
   assert.equal(parsed.isDeviceErrorDetected, true);
-  assert.equal(parsed.detectedPlatform, 'windows');
   assert.equal(parsed.confidence, 100);
-  assert.deepEqual(parsed.matchedIssueIds, ['windows-bsod-blue-screen']);
-  assert.equal(parsed.errorCodeOrText, 'CRITICAL_PROCESS_DIED');
+  assert.equal(parsed.matchedIssues.length, 3);
+  assert.deepEqual(parsed.matchedIssueIds, ['PIN-01', 'PIN-02', 'PIN-03']);
+  assert.equal(parsed.matchedIssues[0].confidence, 92);
 });
 
-test('resolveMatchedIssues returns matching TechCare modules by ID', () => {
+test('resolveMatchedIssuesWithConfidence keeps only valid app issues and preserves confidence', () => {
   const diagnosis = parseDiagnosisPayload(
     JSON.stringify({
       isDeviceErrorDetected: true,
@@ -37,17 +44,38 @@ test('resolveMatchedIssues returns matching TechCare modules by ID', () => {
       detectedIssueTitle: 'Báo phát hiện chất lỏng ở cổng sạc',
       confidence: 92,
       visualObservations: ['Cảnh báo phát hiện chất lỏng hoặc độ ẩm khi cắm cáp'],
-      matchedIssueIds: ['PIN-02', 'non-existent-id'],
+      matchedIssues: [
+        { id: 'PIN-02', confidence: 92 },
+        { id: 'non-existent-id', confidence: 80 },
+      ],
       reasonForRecommendation: 'Khớp chính xác mô-đun xử lý cảnh báo độ ẩm cổng sạc.',
     })
   );
 
-  const resolved = resolveMatchedIssues(diagnosis, DEFAULT_ISSUES);
+  const resolved = resolveMatchedIssuesWithConfidence(diagnosis, DEFAULT_ISSUES);
   assert.equal(resolved.length, 1);
-  assert.equal(resolved[0].id, 'PIN-02');
+  assert.equal(resolved[0].issue.id, 'PIN-02');
+  assert.equal(resolved[0].confidence, 92);
 });
 
-test('resolveMatchedIssues falls back to keyword scoring when matchedIssueIds is empty', () => {
+test('resolveMatchedIssuesWithConfidence returns empty when confidence is under 50%', () => {
+  const diagnosis = parseDiagnosisPayload(
+    JSON.stringify({
+      isDeviceErrorDetected: true,
+      detectedPlatform: 'android',
+      detectedIssueTitle: 'Ảnh mờ không rõ lỗi',
+      confidence: 42,
+      visualObservations: ['Ảnh mờ, thiếu sáng'],
+      matchedIssues: [{ id: 'PIN-01', confidence: 42 }],
+      reasonForRecommendation: 'Độ tin cậy thấp.',
+    })
+  );
+
+  const resolved = resolveMatchedIssuesWithConfidence(diagnosis, DEFAULT_ISSUES);
+  assert.equal(resolved.length, 0);
+});
+
+test('resolveMatchedIssues falls back to existing app issues when matchedIssues is empty and confidence >= 50', () => {
   const diagnosis = parseDiagnosisPayload(
     JSON.stringify({
       isDeviceErrorDetected: true,
@@ -55,14 +83,71 @@ test('resolveMatchedIssues falls back to keyword scoring when matchedIssueIds is
       detectedIssueTitle: 'Cảnh báo độ ẩm cổng sạc USB',
       confidence: 88,
       visualObservations: ['Cảnh báo phát hiện chất lỏng ở cổng sạc', 'Máy từ chối sạc'],
-      matchedIssueIds: [],
+      matchedIssues: [],
       reasonForRecommendation: 'Khớp mô-đun độ ẩm cổng sạc.',
     })
   );
 
   const resolved = resolveMatchedIssues(diagnosis, DEFAULT_ISSUES);
-  assert.ok(resolved.length >= 1);
+  assert.ok(resolved.length >= 1 && resolved.length <= 3);
   assert.equal(resolved[0].id, 'PIN-02');
+});
+
+test('detectCriticalDanger flags swollen battery, water damage, and burning/scorch', () => {
+  const swollen = parseDiagnosisPayload(
+    JSON.stringify({
+      isDeviceErrorDetected: true,
+      detectedPlatform: 'hardware',
+      detectedIssueTitle: 'Pin phồng làm bung màn hình',
+      confidence: 95,
+      hasCriticalDanger: true,
+      criticalDangerReasons: ['Pin phồng biến dạng'],
+      visualObservations: ['Màn hình bị đẩy cong do pin phồng'],
+      matchedIssues: [{ id: 'PIN-10', confidence: 95 }],
+    })
+  );
+  assert.equal(detectCriticalDanger(swollen, []), true);
+
+  const water = parseDiagnosisPayload(
+    JSON.stringify({
+      isDeviceErrorDetected: true,
+      detectedPlatform: 'hardware',
+      detectedIssueTitle: 'Điện thoại bị vào nước',
+      confidence: 45,
+      hasCriticalDanger: false,
+      visualObservations: ['Có hơi nước đọng bên trong cụm camera sau khi vào nước'],
+      matchedIssues: [],
+    })
+  );
+  assert.equal(detectCriticalDanger(water, []), true);
+
+  const burnt = parseDiagnosisPayload(
+    JSON.stringify({
+      isDeviceErrorDetected: true,
+      detectedPlatform: 'hardware',
+      detectedIssueTitle: 'Cổng sạc có vết cháy khét',
+      confidence: 80,
+      hasCriticalDanger: false,
+      visualObservations: ['Chân sạc bị đen, có dấu hiệu cháy khét'],
+      matchedIssues: [],
+    })
+  );
+  assert.equal(detectCriticalDanger(burnt, []), true);
+
+  const normal = parseDiagnosisPayload(
+    JSON.stringify({
+      isDeviceErrorDetected: true,
+      detectedPlatform: 'windows',
+      detectedIssueTitle: 'Lỗi Wi-Fi No Internet',
+      confidence: 85,
+      hasCriticalDanger: false,
+      visualObservations: ['Biểu tượng Wi-Fi có dấu chấm than'],
+      matchedIssues: [{ id: 'WIN-01', confidence: 85 }],
+    })
+  );
+  const winIssue = DEFAULT_ISSUES.find((i) => i.code === 'WIN-01' || i.id === 'WIN-01');
+  assert.ok(winIssue);
+  assert.equal(detectCriticalDanger(normal, [{ issue: winIssue, confidence: 85 }]), false);
 });
 
 test('DEFAULT_ISSUES contains all 50 imported phone troubleshooting entries individually', () => {
@@ -71,45 +156,4 @@ test('DEFAULT_ISSUES contains all 50 imported phone troubleshooting entries indi
     expectedPrefixes.some((prefix) => item.id.startsWith(prefix))
   );
   assert.equal(phoneFaults.length, 50);
-});
-
-test('resolveMatchedIssues returns empty array when no device error detected', () => {
-  const diagnosis = parseDiagnosisPayload(
-    JSON.stringify({
-      isDeviceErrorDetected: false,
-      detectedPlatform: 'hardware',
-      detectedIssueTitle: 'Không phát hiện lỗi thiết bị trong ảnh',
-      confidence: 20,
-      visualObservations: ['Ảnh không chứa màn hình lỗi hoặc thiết bị gặp sự cố'],
-      matchedIssueIds: ['PIN-01'],
-      reasonForRecommendation: 'Không tìm thấy dấu hiệu lỗi thiết bị.',
-    })
-  );
-
-  const resolved = resolveMatchedIssues(diagnosis, DEFAULT_ISSUES);
-  assert.equal(resolved.length, 0);
-});
-
-test('buildModuleFromSuggestion constructs a valid Issue with numbered steps', () => {
-  const issue = buildModuleFromSuggestion({
-    title: 'Lỗi ổ cứng Boot Device Not Found 3F0',
-    platform: 'windows',
-    category: 'system',
-    severity: 'medium',
-    estimatedTime: '10 phút',
-    summary: 'Laptop HP báo lỗi Boot Device Not Found (3F0) khi khởi động.',
-    symptoms: ['Màn hình đen báo Boot Device Not Found'],
-    causes: ['Lỗi cấu hình BIOS Legacy/UEFI hoặc lỏng cáp SSD'],
-    steps: [
-      { title: 'Kiểm tra chế độ UEFI trong BIOS', instructions: 'Nhấn F10 để vào BIOS và bật UEFI.' },
-      { title: 'Chạy chẩn đoán ổ cứng', instructions: 'Nhấn F2 chọn Hard Drive Check.' },
-    ],
-    tags: ['3F0', 'boot', 'windows'],
-  });
-
-  assert.equal(issue.platform, 'windows');
-  assert.equal(issue.steps.length, 2);
-  assert.equal(issue.steps[0].stepNumber, 1);
-  assert.equal(issue.steps[1].stepNumber, 2);
-  assert.equal(issue.isUserSubmitted, true);
 });

@@ -1,22 +1,13 @@
 export type DetectedPlatform = 'iphone' | 'android' | 'windows' | 'mac' | 'hardware';
 
-export interface SuggestedModuleDraft {
-  title: string;
-  platform: DetectedPlatform;
-  category: 'system' | 'screen' | 'battery' | 'network' | 'hardware' | 'security';
-  severity: 'easy' | 'medium' | 'hard';
-  estimatedTime: string;
-  summary: string;
-  symptoms: string[];
-  causes: string[];
-  requiredTools?: string[];
-  steps: {
-    title: string;
-    instructions: string;
-    tip?: string;
-    warning?: string;
-  }[];
-  tags: string[];
+export interface MatchedIssueCandidate {
+  id: string;
+  confidence: number;
+}
+
+export interface MatchedIssueResult {
+  issue: import('./issue').Issue;
+  confidence: number;
 }
 
 export interface GeminiDiagnosisResult {
@@ -26,9 +17,11 @@ export interface GeminiDiagnosisResult {
   confidence: number;
   visualObservations: string[];
   errorCodeOrText?: string;
+  hasCriticalDanger: boolean;
+  criticalDangerReasons: string[];
+  matchedIssues: MatchedIssueCandidate[];
   matchedIssueIds: string[];
   reasonForRecommendation: string;
-  suggestedModule?: SuggestedModuleDraft;
 }
 
 export interface IssueCatalogSummary {

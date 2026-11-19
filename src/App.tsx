@@ -13,11 +13,14 @@ import { IssueCard } from './components/IssueCard';
 import { IssueDetailModal } from './components/IssueDetailModal';
 import { AddIssueModal } from './components/AddIssueModal';
 import { CameraDiagnoseModal } from './components/CameraDiagnoseModal';
+import { StatsPage } from './components/StatsPage';
 import { Toast } from './components/Toast';
 
-import { Issue, Platform, Category, Severity } from './types/issue';
+import { FixOutcome, Issue, Platform, Category, Severity } from './types/issue';
 import { DEFAULT_ISSUES } from './data/defaultIssues';
-import { filterIssues } from './utils/filterIssues';
+import { filterIssues, findSimilarIssuesByTitle } from './utils/filterIssues';
+import { calculateAverageEstimatedMinutes } from './utils/issueMetrics';
+import { normalizeFeedbackCounts } from './utils/issueStats';
 
 export default function App() {
   // 1. Issues State (Loaded with DEFAULT_ISSUES fallback then synced from server)
@@ -45,14 +48,37 @@ export default function App() {
     return [];
   });
 
-  // 4. Filter and Search States
+  // 4. Voted Outcome State (1 selection per device per issue)
+  const [votedOutcomes, setVotedOutcomes] = useState<Record<string, FixOutcome>>(() => {
+    try {
+      const saved = localStorage.getItem('techcare_outcome_votes');
+      if (saved) {
+        const parsed = JSON.parse(saved) as Record<string, unknown>;
+        const cleaned: Record<string, FixOutcome> = {};
+        if (parsed && typeof parsed === 'object') {
+          for (const [k, v] of Object.entries(parsed)) {
+            if (v === 'fixed' || v === 'not_fixed' || v === 'need_shop') {
+              cleaned[k] = v;
+            }
+          }
+        }
+        return cleaned;
+      }
+    } catch {
+      // ignore
+    }
+    return {};
+  });
+
+  // 5. Navigation, Filter and Search States
+  const [activeView, setActiveView] = useState<'catalog' | 'stats'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPlatform, setCurrentPlatform] = useState<Platform>('all');
   const [currentCategory, setCurrentCategory] = useState<Category>('all');
   const [currentSeverity, setCurrentSeverity] = useState<'all' | Severity>('all');
   const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false);
 
-  // 5. Modal and Toast States
+  // 6. Modal and Toast States
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -100,6 +126,19 @@ export default function App() {
     }
   }, [votedHelpfulIds]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('techcare_outcome_votes', JSON.stringify(votedOutcomes));
+    } catch {
+      // storage quota or disabled
+    }
+  }, [votedOutcomes]);
+
+  const activeSelectedIssue = useMemo(() => {
+    if (!selectedIssue) return null;
+    return issues.find((iss) => iss.id === selectedIssue.id) ?? selectedIssue;
+  }, [issues, selectedIssue]);
+
   // Platform counts calculation
   const platformCounts = useMemo(() => {
     const counts: Record<Platform, number> = {
@@ -124,6 +163,11 @@ export default function App() {
     return counts;
   }, [issues]);
 
+  const averageEstimatedMinutes = useMemo(
+    () => calculateAverageEstimatedMinutes(issues),
+    [issues]
+  );
+
   // Filtered issues list
   const filteredIssues = useMemo(() => {
     return filterIssues(issues, {
@@ -135,6 +179,13 @@ export default function App() {
       bookmarkedIds,
     });
   }, [issues, searchQuery, currentPlatform, currentCategory, currentSeverity, showOnlyBookmarks, bookmarkedIds]);
+
+  const quickIssues = useMemo(() => issues.slice(0, 7), [issues]);
+
+  const similarIssues = useMemo(() => {
+    if (filteredIssues.length > 0) return [];
+    return findSimilarIssuesByTitle(issues, searchQuery, 3);
+  }, [filteredIssues.length, issues, searchQuery]);
 
   // Bookmark toggle
   const handleToggleBookmark = (id: string, e?: React.MouseEvent) => {
@@ -168,6 +219,49 @@ export default function App() {
         if (typeof data.helpfulCount === 'number') {
           setIssues((prev) =>
             prev.map((iss) => (iss.id === id ? { ...iss, helpfulCount: data.helpfulCount! } : iss))
+          );
+        }
+      }
+    } catch {
+      // optimistic count remains
+    }
+  };
+
+  // Vote fix outcome (fixed / not_fixed / need_shop) - 1 per device per issue
+  const handleVoteOutcome = async (id: string, outcome: FixOutcome) => {
+    if (votedOutcomes[id]) {
+      setToastMessage('Bạn đã chọn kết quả sửa lỗi cho bài này rồi!');
+      return;
+    }
+
+    setIssues((prev) =>
+      prev.map((iss) => {
+        if (iss.id !== id) return iss;
+        const current = normalizeFeedbackCounts(iss.feedbackCounts);
+        return {
+          ...iss,
+          feedbackCounts: {
+            ...current,
+            [outcome]: current[outcome] + 1,
+          },
+        };
+      })
+    );
+    setVotedOutcomes((prev) => ({ ...prev, [id]: outcome }));
+    setToastMessage('Đã ghi nhận kết quả thực hiện của bạn!');
+
+    try {
+      const res = await fetch(`/api/issues/${encodeURIComponent(id)}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ outcome }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { feedbackCounts?: Issue['feedbackCounts'] };
+        if (data.feedbackCounts) {
+          const syncedCounts = normalizeFeedbackCounts(data.feedbackCounts);
+          setIssues((prev) =>
+            prev.map((iss) => (iss.id === id ? { ...iss, feedbackCounts: syncedCounts } : iss))
           );
         }
       }
@@ -219,6 +313,8 @@ export default function App() {
           setCurrentPlatform(p);
           if (showOnlyBookmarks) setShowOnlyBookmarks(false);
         }}
+        activeView={activeView}
+        onSelectView={setActiveView}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenScanner={() => setIsScannerOpen(true)}
         bookmarkCount={bookmarkedIds.length}
@@ -226,6 +322,13 @@ export default function App() {
         onToggleBookmarks={() => setShowOnlyBookmarks(!showOnlyBookmarks)}
       />
 
+      {activeView === 'stats' ? (
+        <StatsPage
+          issues={issues}
+          onSelectIssue={(iss) => setSelectedIssue(iss)}
+          onBackToCatalog={() => setActiveView('catalog')}
+        />
+      ) : (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
         {/* 2. Conversational Editorial Hero */}
         <section className="relative pt-4 pb-2">
@@ -261,21 +364,25 @@ export default function App() {
 
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 pt-6 border-t border-white/[0.08]">
-            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06]">
+            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06] flex flex-col justify-between">
               <div className="text-xl sm:text-2xl font-bold font-mono text-[#F97316]">{issues.length}</div>
-              <div className="text-xs text-[#A0A0A0] mt-0.5">Sự cố đã biên tập</div>
+              <div className="text-xs text-[#A0A0A0] mt-1">Sự cố đã biên tập</div>
             </div>
-            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06]">
-              <div className="text-xl sm:text-2xl font-bold font-mono text-[#FFFFFF]">100%</div>
-              <div className="text-xs text-[#A0A0A0] mt-0.5">Đã test thực tế</div>
+            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06] flex flex-col justify-between">
+              <div className="text-sm sm:text-base font-bold font-mono text-[#FFFFFF] leading-snug">
+                Apple / Google / Samsung
+              </div>
+              <div className="text-xs text-[#A0A0A0] mt-1">Nguồn chính thức</div>
             </div>
-            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06]">
-              <div className="text-xl sm:text-2xl font-bold font-mono text-[#F97316]">5 Phút</div>
-              <div className="text-xs text-[#A0A0A0] mt-0.5">Thời gian xử lý TB</div>
+            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06] flex flex-col justify-between">
+              <div className="text-xl sm:text-2xl font-bold font-mono text-[#F97316]">
+                {averageEstimatedMinutes} Phút
+              </div>
+              <div className="text-xs text-[#A0A0A0] mt-1">Thời gian xử lý TB</div>
             </div>
-            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06]">
+            <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-white/[0.06] flex flex-col justify-between">
               <div className="text-xl sm:text-2xl font-bold font-mono text-[#FFFFFF]">Cộng đồng</div>
-              <div className="text-xs text-[#A0A0A0] mt-0.5">Đóng góp mở</div>
+              <div className="text-xs text-[#A0A0A0] mt-1">Đóng góp mở</div>
             </div>
           </div>
         </section>
@@ -287,6 +394,9 @@ export default function App() {
             onChange={setSearchQuery}
             resultCount={filteredIssues.length}
             totalCount={issues.length}
+            quickIssues={quickIssues}
+            onSelectQuickIssue={(issue) => setSelectedIssue(issue)}
+            selectedIssueId={selectedIssue?.id ?? null}
           />
         </section>
 
@@ -357,36 +467,63 @@ export default function App() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 px-4 rounded-2xl bg-[#0A0A0A] border border-white/[0.08] space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-[#141414] border border-white/[0.1] text-[#F97316] flex items-center justify-center mx-auto">
-                <AlertCircle className="w-6 h-6" />
+            <div className="space-y-6">
+              <div className="text-center py-14 px-4 rounded-2xl bg-[#0A0A0A] border border-white/[0.08] space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-[#141414] border border-white/[0.1] text-[#F97316] flex items-center justify-center mx-auto">
+                  <AlertCircle className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-[#FFFFFF]">
+                  Không tìm thấy sự cố phù hợp với từ khóa
+                </h3>
+                <p className="text-xs text-[#A0A0A0] max-w-md mx-auto">
+                  Hãy thử tìm kiếm với các từ khóa ngắn gọn hơn như "màn hình", "pin", "sạc", hoặc xem 3 lỗi có tên gần giống nhất bên dưới.
+                </p>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setCurrentCategory('all');
+                      setCurrentPlatform('all');
+                      setCurrentSeverity('all');
+                      setShowOnlyBookmarks(false);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#141414] hover:bg-[#1E1E1E] text-xs font-semibold text-[#FFFFFF] border border-white/[0.1] cursor-pointer"
+                  >
+                    Xóa bộ lọc
+                  </button>
+                  <button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-[#F97316] hover:bg-[#FB923C] text-xs font-bold text-[#000000] cursor-pointer"
+                  >
+                    Đóng góp giải pháp mới
+                  </button>
+                </div>
               </div>
-              <h3 className="text-base font-bold text-[#FFFFFF]">
-                Không tìm thấy sự cố phù hợp với từ khóa
-              </h3>
-              <p className="text-xs text-[#A0A0A0] max-w-md mx-auto">
-                Hãy thử tìm kiếm với các từ khóa ngắn gọn hơn như "màn hình", "pin", "mật khẩu", hoặc thêm lỗi bạn gặp phải vào hệ thống.
-              </p>
-              <div className="flex items-center justify-center gap-3 pt-2">
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setCurrentCategory('all');
-                    setCurrentPlatform('all');
-                    setCurrentSeverity('all');
-                    setShowOnlyBookmarks(false);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#141414] hover:bg-[#1E1E1E] text-xs font-semibold text-[#FFFFFF] border border-white/[0.1] cursor-pointer"
-                >
-                  Xóa bộ lọc
-                </button>
-                <button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-[#F97316] hover:bg-[#FB923C] text-xs font-bold text-[#000000] cursor-pointer"
-                >
-                  Đóng góp giải pháp mới
-                </button>
-              </div>
+
+              {similarIssues.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm sm:text-base font-bold text-[#FFFFFF] flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#F97316]" />
+                      <span>Gợi ý 3 lỗi có tên gần giống nhất</span>
+                    </h3>
+                    <span className="text-xs font-mono text-[#A0A0A0]">
+                      {similarIssues.length} đề xuất
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {similarIssues.map((issue) => (
+                      <IssueCard
+                        key={`similar-${issue.id}`}
+                        issue={issue}
+                        onClick={() => setSelectedIssue(issue)}
+                        isBookmarked={bookmarkedIds.includes(issue.id)}
+                        onToggleBookmark={(e) => handleToggleBookmark(issue.id, e)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>
@@ -412,6 +549,7 @@ export default function App() {
           </div>
         </section>
       </main>
+      )}
 
       {/* 8. Editorial Footer */}
       <footer className="mt-16 border-t border-white/[0.08] bg-[#000000] py-12 text-xs text-[#A0A0A0]">
@@ -425,19 +563,17 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-6 text-xs">
-              <button onClick={() => setCurrentPlatform('iphone')} className="hover:text-[#F97316] cursor-pointer">iPhone</button>
-              <button onClick={() => setCurrentPlatform('android')} className="hover:text-[#F97316] cursor-pointer">Android</button>
-              <button onClick={() => setCurrentPlatform('windows')} className="hover:text-[#F97316] cursor-pointer">Windows</button>
-              <button onClick={() => setCurrentPlatform('mac')} className="hover:text-[#F97316] cursor-pointer">macOS</button>
+              <button onClick={() => { setActiveView('catalog'); setCurrentPlatform('iphone'); }} className="hover:text-[#F97316] cursor-pointer">iPhone</button>
+              <button onClick={() => { setActiveView('catalog'); setCurrentPlatform('android'); }} className="hover:text-[#F97316] cursor-pointer">Android</button>
+              <button onClick={() => { setActiveView('catalog'); setCurrentPlatform('windows'); }} className="hover:text-[#F97316] cursor-pointer">Windows</button>
+              <button onClick={() => { setActiveView('catalog'); setCurrentPlatform('mac'); }} className="hover:text-[#F97316] cursor-pointer">macOS</button>
             </div>
           </div>
 
           <div className="pt-6 border-t border-white/[0.05] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#666666]">
-            <div>© {new Date().getFullYear()} TechCare. Toàn bộ thông tin được tổng hợp từ các chuyên trang công nghệ uy tín.</div>
+            <div>© {new Date().getFullYear()} TechCare. Hướng dẫn chỉ mang tính tham khảo. Hãy sao lưu dữ liệu trước khi thao tác.</div>
             <div className="flex items-center gap-4">
               <span>Không có quảng cáo</span>
-              <span>•</span>
-              <span>Hỗ trợ ngoại tuyến</span>
               <span>•</span>
               <span>Cập nhật 2026</span>
             </div>
@@ -447,13 +583,15 @@ export default function App() {
 
       {/* Modals & Toast */}
       <IssueDetailModal
-        key={selectedIssue?.id ?? 'none'}
-        issue={selectedIssue}
+        key={activeSelectedIssue?.id ?? 'none'}
+        issue={activeSelectedIssue}
         onClose={() => setSelectedIssue(null)}
-        isBookmarked={selectedIssue ? bookmarkedIds.includes(selectedIssue.id) : false}
-        onToggleBookmark={() => selectedIssue && handleToggleBookmark(selectedIssue.id)}
+        isBookmarked={activeSelectedIssue ? bookmarkedIds.includes(activeSelectedIssue.id) : false}
+        onToggleBookmark={() => activeSelectedIssue && handleToggleBookmark(activeSelectedIssue.id)}
         onVoteHelpful={(id) => handleVoteHelpful(id)}
-        hasVotedHelpful={selectedIssue ? votedHelpfulIds.includes(selectedIssue.id) : false}
+        hasVotedHelpful={activeSelectedIssue ? votedHelpfulIds.includes(activeSelectedIssue.id) : false}
+        onVoteOutcome={handleVoteOutcome}
+        selectedOutcome={activeSelectedIssue ? (votedOutcomes[activeSelectedIssue.id] ?? null) : null}
         onShowToast={(msg) => setToastMessage(msg)}
       />
 
