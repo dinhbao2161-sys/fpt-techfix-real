@@ -25,7 +25,15 @@ export const IssueCard: React.FC<IssueCardProps> = ({
   isBookmarked,
   onToggleBookmark,
 }) => {
+  const isPhoneGuide =
+    Array.isArray(issue.platforms) &&
+    issue.platforms.includes('iphone') &&
+    issue.platforms.includes('android');
+
   const getPlatformIcon = (platform: string) => {
+    if (isPhoneGuide) {
+      return <Smartphone className="w-4 h-4 text-[#F97316]" />;
+    }
     switch (platform) {
       case 'iphone':
         return <Smartphone className="w-4 h-4 text-[#F97316]" />;
@@ -41,6 +49,9 @@ export const IssueCard: React.FC<IssueCardProps> = ({
   };
 
   const getPlatformName = (platform: string) => {
+    if (isPhoneGuide) {
+      return 'iOS & Android';
+    }
     switch (platform) {
       case 'iphone':
         return 'Apple iOS';
@@ -98,13 +109,18 @@ export const IssueCard: React.FC<IssueCardProps> = ({
       <div>
         {/* Top Header metadata */}
         <div className="flex items-center justify-between gap-2 mb-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="p-2 rounded-xl bg-[#0A0A0A] border border-white/[0.08] flex items-center justify-center">
               {getPlatformIcon(issue.platform)}
             </span>
             <span className="text-xs font-mono uppercase tracking-wider text-[#A0A0A0]">
               {getPlatformName(issue.platform)}
             </span>
+            {issue.code && (
+              <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-[#141414] text-[#F97316] border border-white/[0.08]">
+                {issue.code}
+              </span>
+            )}
             {issue.isUserSubmitted && (
               <span className="text-[10px] font-mono tracking-wider uppercase px-2 py-0.5 rounded flex items-center gap-1 border bg-[#F97316]/10 text-[#F97316] border-[#F97316]/25">
                 <Sparkles className="w-2.5 h-2.5" />

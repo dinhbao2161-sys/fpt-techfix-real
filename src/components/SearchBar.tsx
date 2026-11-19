@@ -9,13 +9,13 @@ interface SearchBarProps {
 }
 
 const QUICK_SUGGESTIONS = [
-  'Quên mật khẩu iPhone',
-  'Check linh kiện iPhone',
-  'Treo đơ Android',
-  'Mất âm thanh Windows',
-  'Lỗi CH Play',
-  'Full Disk 100%',
-  'Độ ẩm cổng sạc'
+  'Sạc không vào',
+  'Độ ẩm cổng sạc',
+  'Pin tụt nhanh',
+  'Loạn cảm ứng',
+  'Mất sóng',
+  'Quảng cáo popup',
+  'Rơi vào nước'
 ];
 
 export const SearchBar: React.FC<SearchBarProps> = ({

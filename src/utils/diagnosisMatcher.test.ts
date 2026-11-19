@@ -34,35 +34,43 @@ test('resolveMatchedIssues returns matching TechCare modules by ID', () => {
     JSON.stringify({
       isDeviceErrorDetected: true,
       detectedPlatform: 'iphone',
-      detectedIssueTitle: 'iPhone không khả dụng (Passcode)',
+      detectedIssueTitle: 'Báo phát hiện chất lỏng ở cổng sạc',
       confidence: 92,
-      visualObservations: ['Màn hình khóa báo iPhone không khả dụng'],
-      matchedIssueIds: ['iphone-passcode-forgotten', 'non-existent-id'],
-      reasonForRecommendation: 'Khớp chính xác mô-đun quên mật khẩu iPhone.',
+      visualObservations: ['Cảnh báo phát hiện chất lỏng hoặc độ ẩm khi cắm cáp'],
+      matchedIssueIds: ['PIN-02', 'non-existent-id'],
+      reasonForRecommendation: 'Khớp chính xác mô-đun xử lý cảnh báo độ ẩm cổng sạc.',
     })
   );
 
   const resolved = resolveMatchedIssues(diagnosis, DEFAULT_ISSUES);
   assert.equal(resolved.length, 1);
-  assert.equal(resolved[0].id, 'iphone-passcode-forgotten');
+  assert.equal(resolved[0].id, 'PIN-02');
 });
 
 test('resolveMatchedIssues falls back to keyword scoring when matchedIssueIds is empty', () => {
   const diagnosis = parseDiagnosisPayload(
     JSON.stringify({
       isDeviceErrorDetected: true,
-      detectedPlatform: 'android',
+      detectedPlatform: 'hardware',
       detectedIssueTitle: 'Cảnh báo độ ẩm cổng sạc USB',
       confidence: 88,
-      visualObservations: ['Biểu tượng giọt nước ở cổng sạc', 'Không sạc pin được'],
+      visualObservations: ['Cảnh báo phát hiện chất lỏng ở cổng sạc', 'Máy từ chối sạc'],
       matchedIssueIds: [],
-      reasonForRecommendation: 'Khớp mô-đun độ ẩm cổng sạc Android.',
+      reasonForRecommendation: 'Khớp mô-đun độ ẩm cổng sạc.',
     })
   );
 
   const resolved = resolveMatchedIssues(diagnosis, DEFAULT_ISSUES);
   assert.ok(resolved.length >= 1);
-  assert.equal(resolved[0].platform, 'android');
+  assert.equal(resolved[0].id, 'PIN-02');
+});
+
+test('DEFAULT_ISSUES contains all 50 imported phone troubleshooting entries individually', () => {
+  const expectedPrefixes = ['PIN-', 'MAN-', 'PM-', 'KN-', 'AT-', 'CUNG-'];
+  const phoneFaults = DEFAULT_ISSUES.filter((item) =>
+    expectedPrefixes.some((prefix) => item.id.startsWith(prefix))
+  );
+  assert.equal(phoneFaults.length, 50);
 });
 
 test('resolveMatchedIssues returns empty array when no device error detected', () => {
@@ -73,7 +81,7 @@ test('resolveMatchedIssues returns empty array when no device error detected', (
       detectedIssueTitle: 'Không phát hiện lỗi thiết bị trong ảnh',
       confidence: 20,
       visualObservations: ['Ảnh không chứa màn hình lỗi hoặc thiết bị gặp sự cố'],
-      matchedIssueIds: ['windows-bsod-blue-screen'],
+      matchedIssueIds: ['PIN-01'],
       reasonForRecommendation: 'Không tìm thấy dấu hiệu lỗi thiết bị.',
     })
   );

@@ -1,0 +1,523 @@
+{
+  "meta": {
+    "ten_du_an": "Sửa điện thoại tại nhà",
+    "phien_ban": "1.0",
+    "ngay_cap_nhat": "2026-11-19",
+    "mien_tru": "Thông tin mang tính tham khảo cho người dùng phổ thông. Không tự mở máy, không tự tháo pin. Nếu không chắc chắn, hãy mang máy đến trung tâm bảo hành hoặc cửa hàng sửa chữa uy tín.",
+    "do_kho": {
+      "1": "Rất dễ - chỉ cần thao tác trong Cài đặt",
+      "2": "Dễ - cần dụng cụ đơn giản hoặc thao tác vệ sinh nhẹ",
+      "3": "Chỉ chẩn đoán/sơ cứu - nên mang đi sửa"
+    }
+  },
+  "categories": [
+    { "id": "pin_sac", "name": "Pin & sạc" },
+    { "id": "man_hinh", "name": "Màn hình & cảm ứng" },
+    { "id": "phan_mem", "name": "Hiệu năng & phần mềm" },
+    { "id": "ket_noi", "name": "Kết nối & sóng" },
+    { "id": "am_thanh_camera", "name": "Âm thanh & camera" },
+    { "id": "nut_cong", "name": "Nút bấm, cổng & vỏ máy" }
+  ],
+  "faults": [
+    {
+      "id": "PIN-01", "category": "pin_sac", "title": "Sạc không vào hoặc sạc rất chậm", "platform": "all", "difficulty": 2, "time_min": 10,
+      "keywords": ["không nhận sạc", "sạc chậm", "cổng sạc", "cáp sạc"],
+      "tools": ["Bàn chải lông mềm", "Tăm nhựa", "Cáp và củ sạc khác để thử"],
+      "symptoms": ["Cắm sạc nhưng không hiện biểu tượng sạc", "Phải lắc hoặc giữ cáp ở một góc mới nhận", "Sạc nhiều giờ vẫn không đầy"],
+      "causes": ["Cổng sạc bám bụi, xơ vải", "Cáp hoặc củ sạc hỏng, công suất yếu", "Cắm vào cổng USB máy tính công suất thấp"],
+      "steps": ["Thử cáp và củ sạc khác (ưu tiên loại chính hãng) để loại trừ phụ kiện.", "Tắt nguồn máy.", "Dùng bàn chải mềm hoặc tăm nhựa nhẹ nhàng lấy bụi trong cổng sạc.", "Bật máy, cắm lại và thử ổ điện khác."],
+      "warnings": ["Không dùng vật kim loại chọc vào cổng sạc, không xịt nước hoặc cồn trực tiếp vào cổng."],
+      "see_technician_if": ["Đã thử nhiều cáp/củ sạc, cổng sạch mà vẫn không nhận hoặc phải giữ cáp ở góc nghiêng mới sạc được."]
+    },
+    {
+      "id": "PIN-02", "category": "pin_sac", "title": "Báo phát hiện chất lỏng hoặc độ ẩm ở cổng sạc", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["phát hiện chất lỏng", "độ ẩm", "cổng sạc ướt", "cảnh báo ẩm"],
+      "tools": [],
+      "symptoms": ["Hiện cảnh báo phát hiện chất lỏng hoặc độ ẩm khi cắm cáp", "Máy từ chối sạc"],
+      "causes": ["Có hơi ẩm hoặc nước trong cổng sạc", "Cổng bẩn khiến máy nhận tín hiệu sai"],
+      "steps": ["Rút cáp ra khỏi máy.", "Để máy ở nơi khô thoáng, cổng sạc hướng xuống, thông thoáng khí, chờ vài giờ (có thể đến 24 giờ).", "Không dùng gạo, không dùng máy sấy hoặc khí nén.", "Khi cảnh báo biến mất mới sạc lại; trong lúc chờ có thể dùng sạc không dây nếu máy hỗ trợ."],
+      "warnings": ["Một số máy cho phép bỏ qua cảnh báo trong trường hợp khẩn cấp, chỉ làm khi thật sự cần và chắc chắn cổng đã khô."],
+      "see_technician_if": ["Cảnh báo vẫn còn sau 24 giờ để khô ráo.", "Máy từng rơi xuống nước hoặc bị ngập."]
+    },
+    {
+      "id": "PIN-03", "category": "pin_sac", "title": "Pin tụt nhanh bất thường", "platform": "all", "difficulty": 1, "time_min": 20,
+      "keywords": ["hao pin", "tụt pin", "pin yếu", "ngốn pin"],
+      "tools": [],
+      "symptoms": ["Pin giảm vài phần trăm mỗi giờ dù để nhàn rỗi", "Pin tụt nhanh sau khi cập nhật hệ điều hành"],
+      "causes": ["Ứng dụng chạy nền ngốn pin", "Độ sáng cao, tần số quét cao, định vị luôn bật", "Vừa cập nhật hệ điều hành nên máy đang lập chỉ mục dữ liệu"],
+      "steps": ["Vào mục thống kê pin trong Cài đặt để xem ứng dụng nào dùng nhiều pin nhất.", "Hạn chế chạy nền hoặc tắt làm mới nền cho ứng dụng ít dùng.", "Giảm độ sáng, bật độ sáng tự động, hạ tần số quét nếu máy có tùy chọn.", "Khởi động lại máy, chờ 2-3 ngày sau cập nhật rồi đánh giá lại."],
+      "warnings": [],
+      "see_technician_if": ["Pin vẫn tụt nhanh sau khi đã tối ưu, hoặc độ chai pin cao."]
+    },
+    {
+      "id": "PIN-04", "category": "pin_sac", "title": "Pin tụt phần trăm đột ngột hoặc máy tự tắt khi còn pin", "platform": "all", "difficulty": 1, "time_min": 20,
+      "keywords": ["tự tắt nguồn", "sập nguồn", "pin nhảy phần trăm", "tắt khi còn pin"],
+      "tools": [],
+      "symptoms": ["Đang hiển thị 30-40% pin thì máy tắt", "Phần trăm pin nhảy lung tung", "Hay xảy ra khi trời lạnh hoặc mở ứng dụng nặng"],
+      "causes": ["Pin đã chai, không cấp đủ dòng đột ngột", "Thời tiết lạnh làm pin tụt áp", "Hiển thị phần trăm pin bị lệch do phần mềm"],
+      "steps": ["Cập nhật hệ điều hành lên bản mới nhất.", "Tránh dùng máy ngoài trời lạnh hoặc để máy trong môi trường quá nóng.", "Sạc đầy 100%, dùng đến khi còn thấp rồi sạc đầy lại một lần để hệ thống hiển thị chính xác hơn.", "Kiểm tra sức khỏe pin (xem mục PIN-09)."],
+      "warnings": [],
+      "see_technician_if": ["Máy vẫn tự tắt khi còn nhiều pin sau các bước trên - khả năng cao cần thay pin."]
+    },
+    {
+      "id": "PIN-05", "category": "pin_sac", "title": "Máy nóng khi sạc", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["nóng máy khi sạc", "sạc nóng", "củ sạc nóng"],
+      "tools": [],
+      "symptoms": ["Thân máy ấm hoặc nóng khi cắm sạc", "Sạc chậm lại hoặc dừng sạc khi nóng"],
+      "causes": ["Vừa sạc vừa chơi game hoặc quay video", "Ốp lưng dày, để máy dưới gối hoặc chăn", "Củ sạc hoặc cáp kém chất lượng"],
+      "steps": ["Ngừng dùng ứng dụng nặng trong lúc sạc.", "Tháo ốp lưng, đặt máy nơi thoáng, không phủ chăn gối.", "Dùng củ sạc và cáp chính hãng hoặc có chứng nhận.", "Sạc ở nhiệt độ phòng, tránh nắng trực tiếp."],
+      "warnings": ["Nếu máy nóng đến mức khó cầm, có mùi khét hoặc thân máy phồng, rút sạc ngay và ngừng sử dụng."],
+      "see_technician_if": ["Máy nóng bất thường dù không dùng gì, kèm mùi lạ hoặc thân máy phồng."]
+    },
+    {
+      "id": "PIN-06", "category": "pin_sac", "title": "Sạc không dây không nhận hoặc ngắt liên tục", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["sạc không dây", "đế sạc", "wireless charging"],
+      "tools": [],
+      "symptoms": ["Đặt lên đế sạc nhưng không hiện biểu tượng sạc", "Sạc được vài giây rồi ngắt"],
+      "causes": ["Đặt lệch tâm cuộn sạc", "Ốp lưng quá dày hoặc có kim loại, thẻ, nam châm", "Đế sạc hoặc nguồn cấp cho đế yếu"],
+      "steps": ["Tháo ốp lưng, bỏ thẻ hoặc vật kim loại sau máy.", "Đặt máy sao cho tâm cuộn sạc sau máy khớp tâm đế sạc, thử vài vị trí.", "Dùng củ sạc đúng công suất cho đế sạc.", "Thử đế sạc khác để loại trừ lỗi từ đế."],
+      "warnings": [],
+      "see_technician_if": ["Đế sạc khác cũng không sạc được máy."]
+    },
+    {
+      "id": "PIN-07", "category": "pin_sac", "title": "Cáp sạc chập chờn hoặc đứt ngầm", "platform": "all", "difficulty": 1, "time_min": 5,
+      "keywords": ["cáp sạc hỏng", "cáp đứt", "sạc chập chờn", "dây sạc"],
+      "tools": ["Cáp sạc khác"],
+      "symptoms": ["Sạc được rồi ngắt khi cử động dây", "Vỏ dây bong hoặc gập gãy gần đầu cắm"],
+      "causes": ["Dây bị gập, kéo mạnh ở gần đầu cắm", "Đầu cắm bị oxy hóa hoặc cong"],
+      "steps": ["Thử cáp khác trên cùng củ sạc để xác định lỗi nằm ở cáp.", "Kiểm tra vỏ dây và đầu cáp xem có nứt, cháy, đổi màu.", "Thay cáp chính hãng hoặc cáp có chứng nhận.", "Không quấn dây quá chặt, không kéo dây khi rút."],
+      "warnings": ["Không dùng băng keo quấn lại cáp bị hở lõi dây - rất dễ chập điện."],
+      "see_technician_if": ["Cáp mới, củ mới vẫn chập chờn - lỗi có thể ở chân sạc trong máy."]
+    },
+    {
+      "id": "PIN-08", "category": "pin_sac", "title": "Máy không lên nguồn (nghi hết pin sâu)", "platform": "all", "difficulty": 1, "time_min": 40,
+      "keywords": ["không lên nguồn", "máy đen", "không bật được", "hết pin sâu"],
+      "tools": ["Cáp và củ sạc tốt"],
+      "symptoms": ["Màn hình đen, bấm nút nguồn không phản ứng", "Cắm sạc vẫn không hiện gì"],
+      "causes": ["Pin cạn kiệt hoàn toàn", "Máy treo phần mềm"],
+      "steps": ["Cắm sạc bằng cáp và củ sạc chắc chắn tốt, chờ 15-30 phút (máy hết pin sâu cần thời gian mới hiện biểu tượng).", "Ép khởi động lại. iPhone: nhấn nhả tăng âm lượng, nhấn nhả giảm âm lượng rồi giữ nút nguồn đến khi hiện logo. Android: giữ nút nguồn kết hợp giảm âm lượng khoảng 10-15 giây.", "Thử ổ cắm và củ sạc khác."],
+      "warnings": [],
+      "see_technician_if": ["Sau khoảng 1 giờ sạc, máy vẫn không phản hồi."]
+    },
+    {
+      "id": "PIN-09", "category": "pin_sac", "title": "Pin chai - cách kiểm tra sức khỏe pin", "platform": "all", "difficulty": 3, "time_min": 5,
+      "keywords": ["pin chai", "độ chai pin", "sức khỏe pin", "thay pin"],
+      "tools": [],
+      "symptoms": ["Dung lượng pin dùng được ngắn hơn rõ rệt so với lúc mới mua", "Máy hay tự tắt hoặc chậm lại"],
+      "causes": ["Pin lão hóa theo số lần sạc và thời gian", "Thường xuyên để máy nóng hoặc sạc cạn kiệt"],
+      "steps": ["iPhone: vào Cài đặt > Pin > Tình trạng pin & sạc để xem dung lượng tối đa.", "Android: nhiều hãng có công cụ riêng (ví dụ ứng dụng Samsung Members có mục chẩn đoán pin).", "Với iPhone, dung lượng tối đa dưới khoảng 80% thường được xem là đã chai đáng kể.", "Nếu pin chai, cân nhắc thay pin tại trung tâm bảo hành hoặc cửa hàng uy tín."],
+      "warnings": ["Không tự mở máy để thay pin nếu không có kinh nghiệm."],
+      "see_technician_if": ["Pin chai nhiều hoặc có cảnh báo cần bảo dưỡng pin."]
+    },
+    {
+      "id": "PIN-10", "category": "pin_sac", "title": "Pin phồng (thân máy kênh, màn hình bung)", "platform": "all", "difficulty": 3, "time_min": 5,
+      "keywords": ["pin phồng", "máy kênh", "bung màn hình", "pin nguy hiểm"],
+      "tools": [],
+      "symptoms": ["Nắp lưng hoặc màn hình bị bung, hở viền", "Máy đặt trên mặt bàn bị kênh, không nằm phẳng", "Máy nóng hoặc có mùi lạ"],
+      "causes": ["Pin lão hóa hoặc bị hỏng, sinh khí bên trong", "Sạc bằng phụ kiện kém chất lượng, để nóng lâu"],
+      "steps": ["Ngừng sạc và ngừng sử dụng máy ngay.", "Tắt nguồn, để máy nơi thoáng, xa vật dễ cháy; không bỏ vào túi hay để dưới gối.", "Không ấn, chọc, uốn hoặc cố tháo pin.", "Mang đến trung tâm bảo hành hoặc cửa hàng sửa chữa uy tín càng sớm càng tốt."],
+      "warnings": ["Pin phồng có nguy cơ cháy nổ. Tuyệt đối không tự xử lý tại nhà."],
+      "see_technician_if": ["Có bất kỳ dấu hiệu phồng nào - đây là trường hợp phải mang đi sửa."]
+    },
+    {
+      "id": "MAN-01", "category": "man_hinh", "title": "Cảm ứng loạn, tự bấm (ghost touch)", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["cảm ứng loạn", "tự bấm", "ghost touch", "màn hình tự nhảy"],
+      "tools": ["Khăn mềm"],
+      "symptoms": ["Màn hình tự mở ứng dụng hoặc tự gõ chữ", "Cảm ứng nhảy lung tung, nhất là khi đang sạc"],
+      "causes": ["Tay hoặc màn hình bị ướt, bẩn", "Miếng dán cường lực kém chất lượng hoặc bị lệch", "Củ sạc hoặc cáp kém chất lượng gây nhiễu", "Lỗi phần mềm tạm thời"],
+      "steps": ["Lau sạch màn hình bằng khăn mềm hơi ẩm, để khô hẳn.", "Tháo miếng dán cường lực và thử lại.", "Rút sạc, dùng củ sạc chính hãng và kiểm tra lại.", "Khởi động lại máy và cập nhật hệ điều hành."],
+      "warnings": [],
+      "see_technician_if": ["Vẫn loạn cảm ứng sau khi tháo miếng dán, rút sạc và khởi động lại - có thể hỏng tấm cảm ứng."]
+    },
+    {
+      "id": "MAN-02", "category": "man_hinh", "title": "Cảm ứng kém nhạy hoặc chỗ nhạy chỗ không", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["cảm ứng kém", "liệt cảm ứng", "cảm ứng không nhạy", "vuốt không ăn"],
+      "tools": ["Khăn mềm"],
+      "symptoms": ["Chạm nhiều lần mới nhận", "Một vùng màn hình không phản hồi"],
+      "causes": ["Màn hình bẩn, dính dầu mỡ hoặc tay ướt", "Miếng dán dày hoặc có bọt khí", "Lỗi phần mềm tạm thời"],
+      "steps": ["Lau sạch màn hình và lau khô tay.", "Tháo hoặc dán lại miếng dán chất lượng tốt, mỏng.", "Bật tùy chọn tăng độ nhạy cảm ứng nếu máy có (ví dụ Samsung: Cài đặt > Màn hình > Độ nhạy cảm ứng).", "Khởi động lại máy và thử trong ứng dụng khác để xác định lỗi phần mềm hay phần cứng."],
+      "warnings": [],
+      "see_technician_if": ["Một vùng cố định luôn không nhận cảm ứng dù đã tháo miếng dán và khởi động lại."]
+    },
+    {
+      "id": "MAN-03", "category": "man_hinh", "title": "Màn hình ám vàng hoặc sai màu", "platform": "all", "difficulty": 1, "time_min": 5,
+      "keywords": ["ám vàng", "sai màu", "màn hình ngả vàng", "lọc ánh sáng xanh"],
+      "tools": [],
+      "symptoms": ["Màn hình ngả vàng hoặc ngả cam", "Màu sắc nhạt hoặc đậm bất thường"],
+      "causes": ["Đang bật lọc ánh sáng xanh, chế độ ban đêm hoặc True Tone", "Chế độ hiển thị hoặc bộ lọc màu thay đổi", "Miếng dán cường lực ngả vàng"],
+      "steps": ["Tắt chế độ ban đêm, bảo vệ mắt hoặc True Tone trong cài đặt màn hình.", "Đặt chế độ màu về mặc định.", "Kiểm tra mục Trợ năng xem có bật bộ lọc màu không.", "Tháo miếng dán để so sánh."],
+      "warnings": [],
+      "see_technician_if": ["Có vệt xanh, tím hoặc hồng cố định, kể cả ở màn hình khởi động - nghi hỏng tấm nền."]
+    },
+    {
+      "id": "MAN-04", "category": "man_hinh", "title": "Màn hình nhấp nháy", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["nhấp nháy", "chớp màn hình", "flicker", "tần số quét"],
+      "tools": [],
+      "symptoms": ["Màn hình chớp sáng tối liên tục", "Nhấp nháy khi hạ độ sáng hoặc trong một ứng dụng"],
+      "causes": ["Độ sáng tự động hoặc tần số quét thay đổi", "Ứng dụng lỗi hiển thị", "Lỗi sau khi cập nhật hệ điều hành"],
+      "steps": ["Tắt độ sáng tự động, đặt độ sáng cố định.", "Đặt tần số quét về một mức cố định nếu máy cho phép.", "Xác định lỗi chỉ ở một ứng dụng hay toàn máy; cập nhật hoặc gỡ ứng dụng đó.", "Android: vào Chế độ an toàn để loại trừ ứng dụng bên thứ ba."],
+      "warnings": [],
+      "see_technician_if": ["Nhấp nháy cả ở màn hình chính và trong Chế độ an toàn, kể cả sau khi đặt lại cài đặt."]
+    },
+    {
+      "id": "MAN-05", "category": "man_hinh", "title": "Màn hình tối hoặc tự giảm độ sáng", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["màn hình tối", "tự giảm sáng", "độ sáng thấp", "cảm biến ánh sáng"],
+      "tools": [],
+      "symptoms": ["Độ sáng tự giảm dù đã kéo lên cao", "Màn hình khó nhìn ngoài trời"],
+      "causes": ["Máy nóng nên tự giảm độ sáng", "Đang bật chế độ tiết kiệm pin", "Cảm biến ánh sáng bị che bởi miếng dán hoặc ốp"],
+      "steps": ["Đưa máy ra khỏi nắng, tháo ốp, để máy nguội.", "Tắt chế độ tiết kiệm pin hoặc chỉnh độ sáng thủ công.", "Kiểm tra miếng dán có che cảm biến ánh sáng ở phía trên màn hình không.", "Thử tắt độ sáng tự động."],
+      "warnings": [],
+      "see_technician_if": ["Màn hình luôn rất tối dù máy nguội và đã tắt các chế độ tiết kiệm."]
+    },
+    {
+      "id": "MAN-06", "category": "man_hinh", "title": "Hình mờ lưu lại trên màn hình (kẹt hình)", "platform": "all", "difficulty": 1, "time_min": 30,
+      "keywords": ["kẹt hình", "ám hình", "burn-in", "image retention", "bóng ma"],
+      "tools": [],
+      "symptoms": ["Thấy bóng mờ của thanh điều hướng, logo hoặc bàn phím", "Hình cũ còn lưu lại khi chuyển cảnh"],
+      "causes": ["Hiển thị hình tĩnh trong thời gian dài (lưu ảnh tạm thời)", "Burn-in lâu dài trên màn OLED"],
+      "steps": ["Phát video hoặc nền đổi màu toàn màn hình trong 10-30 phút.", "Giảm độ sáng, đặt thời gian tự khóa ngắn hơn.", "Bật chế độ tối, hạn chế để hình tĩnh hiển thị lâu.", "Theo dõi vài ngày xem vết có mờ đi không."],
+      "warnings": [],
+      "see_technician_if": ["Hình mờ vẫn rõ sau vài ngày - thường là burn-in vĩnh viễn, cần thay màn hình."]
+    },
+    {
+      "id": "MAN-07", "category": "man_hinh", "title": "Màn hình không tự xoay", "platform": "all", "difficulty": 1, "time_min": 5,
+      "keywords": ["không xoay", "xoay màn hình", "auto rotate", "khóa xoay"],
+      "tools": [],
+      "symptoms": ["Nghiêng máy ngang nhưng giao diện vẫn dọc"],
+      "causes": ["Đang bật khóa xoay màn hình", "Ứng dụng không hỗ trợ xoay ngang", "Lỗi phần mềm tạm thời"],
+      "steps": ["Android: bật Xoay tự động trong bảng thông báo. iPhone: tắt Khóa hướng dọc trong Trung tâm điều khiển.", "Thử xoay trong một ứng dụng hỗ trợ xoay như trình duyệt hoặc trình phát video.", "Khởi động lại máy.", "Bỏ ốp hoặc phụ kiện có nam châm mạnh gần máy và thử lại."],
+      "warnings": [],
+      "see_technician_if": ["Không xoay ở bất kỳ ứng dụng nào sau khi khởi động lại - nghi lỗi cảm biến."]
+    },
+    {
+      "id": "MAN-08", "category": "man_hinh", "title": "Miếng dán cường lực nứt, bọt khí hoặc bong", "platform": "all", "difficulty": 2, "time_min": 15,
+      "keywords": ["dán màn hình", "bọt khí", "miếng dán nứt", "cường lực"],
+      "tools": ["Miếng dán mới", "Khăn lau màn hình", "Băng dính gỡ bụi", "Thẻ mềm"],
+      "symptoms": ["Miếng dán nứt, mẻ cạnh", "Có bọt khí hoặc bụi bên dưới", "Mép dán bị bong"],
+      "causes": ["Va đập, rơi máy", "Dán trong môi trường nhiều bụi", "Miếng dán kém chất lượng"],
+      "steps": ["Rửa tay, chọn nơi ít bụi.", "Lau sạch màn hình bằng khăn lau, dùng băng dính gỡ bụi còn sót.", "Dán từ một mép, dùng thẻ mềm ép bọt khí ra ngoài.", "Nếu dán lệch hoặc bọt khí lớn, bóc ra dán lại hoặc dùng miếng mới."],
+      "warnings": ["Miếng dán đã nứt dễ làm xước tay và giảm độ nhạy cảm ứng - nên thay."],
+      "see_technician_if": ["Màn hình bên dưới miếng dán cũng đã nứt."]
+    },
+    {
+      "id": "PM-01", "category": "phan_mem", "title": "Máy chạy chậm, giật lag", "platform": "all", "difficulty": 1, "time_min": 20,
+      "keywords": ["lag", "giật", "chạy chậm", "máy ì"],
+      "tools": [],
+      "symptoms": ["Mở ứng dụng lâu", "Vuốt màn hình bị giật", "Chuyển ứng dụng bị chậm"],
+      "causes": ["Bộ nhớ gần đầy", "Quá nhiều ứng dụng chạy nền", "Máy lâu chưa khởi động lại hoặc chưa cập nhật"],
+      "steps": ["Khởi động lại máy.", "Kiểm tra dung lượng trống, nên để trống khoảng 10-20%.", "Xóa cache, gỡ ứng dụng ít dùng, tắt chạy nền ứng dụng không cần.", "Cập nhật hệ điều hành và ứng dụng.", "Nếu vẫn chậm: sao lưu dữ liệu rồi đặt lại cài đặt gốc."],
+      "warnings": ["Đặt lại cài đặt gốc sẽ xóa dữ liệu - phải sao lưu trước."],
+      "see_technician_if": ["Máy vẫn rất chậm sau khi đặt lại cài đặt gốc."]
+    },
+    {
+      "id": "PM-02", "category": "phan_mem", "title": "Hết dung lượng, bộ nhớ đầy", "platform": "all", "difficulty": 1, "time_min": 20,
+      "keywords": ["đầy bộ nhớ", "hết dung lượng", "storage full", "dọn dẹp"],
+      "tools": [],
+      "symptoms": ["Báo bộ nhớ đầy hoặc sắp đầy", "Không chụp được ảnh, không cài được ứng dụng"],
+      "causes": ["Ảnh và video dung lượng lớn", "Cache ứng dụng, tệp tải xuống tích lũy", "Tin nhắn có tệp đính kèm"],
+      "steps": ["Vào Cài đặt > Lưu trữ để xem mục nào chiếm nhiều nhất.", "Sao lưu ảnh và video lên đám mây hoặc máy tính rồi xóa trên máy.", "Xóa cache, tệp tải xuống không cần và gỡ ứng dụng ít dùng.", "Dọn tin nhắn có ảnh, video đính kèm nặng."],
+      "warnings": ["Kiểm tra bản sao lưu đã đầy đủ trước khi xóa ảnh gốc."],
+      "see_technician_if": []
+    },
+    {
+      "id": "PM-03", "category": "phan_mem", "title": "Ứng dụng tự thoát hoặc không mở được", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["app crash", "ứng dụng tự thoát", "không mở được app", "văng app"],
+      "tools": [],
+      "symptoms": ["Mở ứng dụng vài giây rồi tự thoát", "Ứng dụng đứng ở màn hình trắng hoặc logo"],
+      "causes": ["Phiên bản ứng dụng cũ hoặc lỗi", "Cache hỏng", "Thiếu dung lượng trống"],
+      "steps": ["Đóng hẳn ứng dụng và mở lại.", "Android: Buộc dừng, xóa cache ứng dụng trong Cài đặt > Ứng dụng.", "Cập nhật ứng dụng và hệ điều hành.", "Gỡ cài đặt rồi cài lại ứng dụng.", "Kiểm tra dung lượng trống."],
+      "warnings": ["Gỡ ứng dụng có thể mất dữ liệu cục bộ - đăng nhập tài khoản trước để đồng bộ."],
+      "see_technician_if": ["Nhiều ứng dụng khác nhau cùng thoát liên tục."]
+    },
+    {
+      "id": "PM-04", "category": "phan_mem", "title": "Máy treo, đơ hoặc màn hình đen nhưng vẫn có tiếng", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["treo máy", "đơ máy", "đứng hình", "màn hình đen vẫn rung"],
+      "tools": [],
+      "symptoms": ["Không phản hồi khi chạm", "Màn hình đen nhưng máy vẫn rung hoặc có chuông"],
+      "causes": ["Ứng dụng treo, thiếu bộ nhớ", "Lỗi phần mềm tạm thời", "Vừa cập nhật hệ điều hành chưa xong"],
+      "steps": ["Chờ 1-2 phút nếu vừa cập nhật.", "Ép khởi động lại. iPhone: nhấn nhả tăng âm lượng, nhấn nhả giảm âm lượng, giữ nút nguồn đến khi hiện logo. Android: giữ nút nguồn kết hợp giảm âm lượng khoảng 10-15 giây.", "Sạc máy 15-30 phút rồi thử lại.", "Sau khi lên được, dọn bộ nhớ và cập nhật hệ điều hành."],
+      "warnings": [],
+      "see_technician_if": ["Vẫn đen màn hình dù máy rung và có tiếng - nghi hỏng màn hình hoặc cáp màn hình."]
+    },
+    {
+      "id": "PM-05", "category": "phan_mem", "title": "Máy tự khởi động lại liên tục hoặc kẹt logo", "platform": "all", "difficulty": 2, "time_min": 60,
+      "keywords": ["bootloop", "tự khởi động lại", "kẹt logo", "restart liên tục"],
+      "tools": ["Máy tính", "Cáp chính hãng"],
+      "symptoms": ["Máy tự khởi động lại nhiều lần", "Kẹt ở logo hãng, không vào được màn hình chính"],
+      "causes": ["Ứng dụng mới cài gây xung đột", "Hết dung lượng", "Lỗi hệ điều hành sau cập nhật", "Pin yếu"],
+      "steps": ["Rút sạc, để máy nguội rồi khởi động lại.", "Android: vào Chế độ an toàn, gỡ ứng dụng mới cài gần đây.", "Giải phóng dung lượng nếu vào được máy.", "Cập nhật hoặc khôi phục hệ điều hành theo hướng dẫn chính hãng (ví dụ chế độ Recovery với iPhone, Smart Switch hoặc Recovery với Android).", "Sao lưu dữ liệu nếu có thể trước khi khôi phục."],
+      "warnings": ["Khôi phục hệ điều hành có thể xóa toàn bộ dữ liệu."],
+      "see_technician_if": ["Khôi phục hệ điều hành không khắc phục được, hoặc máy báo lỗi phần cứng."]
+    },
+    {
+      "id": "PM-06", "category": "phan_mem", "title": "Máy nóng khi dùng bình thường", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["nóng máy", "máy nóng", "quá nhiệt", "tỏa nhiệt"],
+      "tools": [],
+      "symptoms": ["Thân máy ấm hoặc nóng dù chỉ lướt web", "Máy giảm hiệu năng, giảm độ sáng khi nóng"],
+      "causes": ["Chơi game nặng, quay video lâu", "Ốp dày, ánh nắng trực tiếp", "Sóng yếu khiến máy tiêu hao nhiều", "Vừa cập nhật hoặc khôi phục dữ liệu nên máy đang xử lý nền"],
+      "steps": ["Đóng ứng dụng nặng, tháo ốp, để máy nơi mát.", "Kiểm tra ứng dụng nào dùng pin và CPU nhiều.", "Bật chế độ máy bay một lúc nếu nghi ngờ do sóng yếu.", "Cập nhật hệ điều hành và ứng dụng."],
+      "warnings": ["Không cho máy vào tủ lạnh hoặc để gần nguồn lạnh để làm mát nhanh - dễ gây đọng hơi nước."],
+      "see_technician_if": ["Máy nóng bất thường khi không dùng gì, kèm hao pin nhanh."]
+    },
+    {
+      "id": "PM-07", "category": "phan_mem", "title": "Không cập nhật được hệ điều hành", "platform": "all", "difficulty": 1, "time_min": 30,
+      "keywords": ["cập nhật", "update lỗi", "không update được", "lỗi cập nhật"],
+      "tools": [],
+      "symptoms": ["Báo thiếu dung lượng", "Tải về bị đứng hoặc báo lỗi", "Không thấy bản cập nhật"],
+      "causes": ["Thiếu dung lượng trống", "Mạng yếu hoặc không ổn định", "Pin thấp", "Máy đã hết thời gian được hỗ trợ cập nhật"],
+      "steps": ["Cắm sạc và kết nối Wi-Fi ổn định.", "Giải phóng dung lượng (xem PM-02).", "Khởi động lại máy rồi thử lại.", "Đặt lại cài đặt mạng nếu tải về bị lỗi.", "iPhone: có thể cập nhật qua máy tính. Kiểm tra máy còn được hãng hỗ trợ cập nhật không."],
+      "warnings": ["Không tắt máy hoặc rút sạc giữa lúc đang cài cập nhật."],
+      "see_technician_if": ["Cập nhật báo lỗi lặp lại dù đã đủ dung lượng và mạng tốt."]
+    },
+    {
+      "id": "PM-08", "category": "phan_mem", "title": "Không tải được ứng dụng từ CH Play hoặc App Store", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["CH Play", "App Store", "không tải được app", "lỗi tải ứng dụng"],
+      "tools": [],
+      "symptoms": ["Đứng ở trạng thái chờ tải", "Báo lỗi khi tải hoặc cập nhật", "Không tìm thấy ứng dụng"],
+      "causes": ["Mạng yếu hoặc đang bật VPN", "Ngày giờ máy không chính xác", "Thiếu dung lượng", "Lỗi tài khoản hoặc cache cửa hàng"],
+      "steps": ["Kiểm tra mạng và tắt VPN.", "Đặt ngày giờ về chế độ tự động.", "Kiểm tra dung lượng trống.", "Đăng xuất và đăng nhập lại tài khoản cửa hàng ứng dụng.", "Android: xóa cache và dữ liệu của CH Play."],
+      "warnings": [],
+      "see_technician_if": []
+    },
+    {
+      "id": "PM-09", "category": "phan_mem", "title": "Thông báo không hiện hoặc đến trễ", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["thông báo", "notification", "không báo tin nhắn", "trễ thông báo"],
+      "tools": [],
+      "symptoms": ["Chỉ thấy tin nhắn khi mở ứng dụng", "Thông báo đến rất trễ"],
+      "causes": ["Chưa cấp quyền thông báo", "Đang bật Không làm phiền hoặc chế độ Tập trung", "Tối ưu pin chặn ứng dụng chạy nền", "Mạng yếu"],
+      "steps": ["Kiểm tra quyền thông báo của từng ứng dụng.", "Tắt Không làm phiền hoặc chế độ Tập trung.", "Android: bỏ tối ưu hóa pin hoặc cho phép chạy nền với ứng dụng cần thiết.", "iPhone: bật Làm mới ứng dụng trong nền.", "Kiểm tra kết nối mạng."],
+      "warnings": [],
+      "see_technician_if": []
+    },
+    {
+      "id": "PM-10", "category": "phan_mem", "title": "Quảng cáo bật lên liên tục, nghi nhiễm mã độc", "platform": "all", "difficulty": 2, "time_min": 30,
+      "keywords": ["quảng cáo popup", "mã độc", "virus", "ứng dụng lạ", "adware"],
+      "tools": [],
+      "symptoms": ["Quảng cáo bật lên ngoài ứng dụng", "Xuất hiện ứng dụng lạ không tự cài", "Trình duyệt tự chuyển trang"],
+      "causes": ["Cài ứng dụng ngoài kho chính thức", "Bấm vào đường dẫn hoặc quảng cáo độc hại", "Cho phép thông báo từ trang web lạ"],
+      "steps": ["Android: vào Chế độ an toàn, gỡ các ứng dụng lạ hoặc mới cài.", "Thu hồi quyền Hiển thị trên ứng dụng khác và Quản trị thiết bị của ứng dụng lạ.", "Quét bằng Google Play Protect, xóa dữ liệu trình duyệt và tắt thông báo trang web.", "iPhone: Cài đặt > Safari > Chặn cửa sổ bật lên, xóa lịch sử và dữ liệu trang web.", "Đổi mật khẩu các tài khoản quan trọng nếu nghi ngờ bị lộ."],
+      "warnings": ["Không bấm vào đường dẫn lạ, không cài ứng dụng từ nguồn không chính thức."],
+      "see_technician_if": ["Vẫn bị quảng cáo sau khi gỡ ứng dụng lạ - cân nhắc sao lưu rồi đặt lại cài đặt gốc."]
+    },
+    {
+      "id": "KN-01", "category": "ket_noi", "title": "Wi-Fi không kết nối hoặc sóng yếu", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["wifi", "không bắt được wifi", "wifi yếu", "mất wifi"],
+      "tools": [],
+      "symptoms": ["Không thấy mạng Wi-Fi", "Báo lỗi xác thực khi kết nối", "Wi-Fi chập chờn, hay rớt"],
+      "causes": ["Router hoặc modem đang lỗi", "Mật khẩu sai hoặc đổi", "Cài đặt mạng trên máy bị lỗi"],
+      "steps": ["Bật tắt chế độ máy bay rồi kết nối lại.", "Quên mạng Wi-Fi rồi nhập lại mật khẩu.", "Khởi động lại router.", "Thử kết nối thiết bị khác để xác định lỗi ở máy hay ở router.", "Đặt lại cài đặt mạng trên máy (sẽ xóa Wi-Fi đã lưu)."],
+      "warnings": [],
+      "see_technician_if": ["Chỉ riêng máy này không bắt được Wi-Fi, các thiết bị khác bình thường dù đã đặt lại cài đặt mạng."]
+    },
+    {
+      "id": "KN-02", "category": "ket_noi", "title": "Có Wi-Fi nhưng không vào được Internet", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["wifi không internet", "có wifi không vào mạng", "đổi DNS", "kết nối không có internet"],
+      "tools": [],
+      "symptoms": ["Biểu tượng Wi-Fi hiện nhưng web không tải", "Báo kết nối không có Internet"],
+      "causes": ["Router mất kết nối ra ngoài hoặc nhà mạng lỗi", "DNS có vấn đề", "Đang bật VPN hoặc proxy"],
+      "steps": ["Thử thiết bị khác cùng Wi-Fi để biết lỗi ở router hay ở máy.", "Tắt VPN.", "Khởi động lại router và máy.", "Thử đổi DNS (ví dụ 8.8.8.8 hoặc 1.1.1.1) trong cài đặt Wi-Fi.", "Đặt lại cài đặt mạng."],
+      "warnings": [],
+      "see_technician_if": ["Các thiết bị khác ổn định, riêng máy này vẫn lỗi sau mọi bước."]
+    },
+    {
+      "id": "KN-03", "category": "ket_noi", "title": "Bluetooth không ghép nối hoặc ngắt liên tục", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["bluetooth", "tai nghe bluetooth", "ghép nối", "ngắt kết nối"],
+      "tools": [],
+      "symptoms": ["Không thấy thiết bị khi quét", "Kết nối được rồi tự ngắt", "Âm thanh bị giật qua Bluetooth"],
+      "causes": ["Thiết bị đang kết nối với máy khác", "Khoảng cách xa hoặc nhiễu sóng", "Dữ liệu ghép nối cũ bị lỗi"],
+      "steps": ["Tắt rồi bật lại Bluetooth ở cả hai thiết bị.", "Xóa thiết bị khỏi danh sách đã ghép rồi ghép lại.", "Đưa hai thiết bị lại gần nhau, tắt các thiết bị Bluetooth khác đang kết nối.", "Sạc đầy tai nghe hoặc loa.", "Đặt lại cài đặt mạng nếu vẫn lỗi."],
+      "warnings": [],
+      "see_technician_if": ["Bluetooth không bật được hoặc không thấy bất kỳ thiết bị nào."]
+    },
+    {
+      "id": "KN-04", "category": "ket_noi", "title": "Mất sóng hoặc báo Không có dịch vụ", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["mất sóng", "không có dịch vụ", "no service", "không bắt sóng"],
+      "tools": [],
+      "symptoms": ["Thanh sóng trống hoặc báo Không có dịch vụ", "Không gọi được, không dùng được dữ liệu di động"],
+      "causes": ["Khu vực sóng yếu", "SIM hoặc chế độ mạng bị lỗi", "Đang bật chế độ máy bay"],
+      "steps": ["Kiểm tra chế độ máy bay đã tắt chưa.", "Bật tắt chế độ máy bay hoặc khởi động lại máy.", "Chọn lại nhà mạng ở chế độ tự động.", "Tháo và lắp lại SIM (xem KN-05).", "Thử SIM trên máy khác để xác định lỗi."],
+      "warnings": [],
+      "see_technician_if": ["SIM chạy tốt trên máy khác nhưng máy này vẫn mất sóng ở nhiều khu vực."]
+    },
+    {
+      "id": "KN-05", "category": "ket_noi", "title": "Máy không nhận SIM", "platform": "all", "difficulty": 2, "time_min": 10,
+      "keywords": ["không nhận sim", "no sim", "chưa lắp sim", "sim lỗi"],
+      "tools": ["Que lấy SIM", "Vải khô mềm"],
+      "symptoms": ["Báo Không có SIM hoặc SIM không hợp lệ", "Mất sóng sau khi lắp SIM"],
+      "causes": ["SIM lắp lệch hoặc khay không khớp", "Chân SIM bẩn hoặc oxy hóa", "SIM hỏng hoặc chưa kích hoạt"],
+      "steps": ["Tắt máy.", "Dùng que lấy SIM mở khay, lấy SIM ra.", "Lau nhẹ phần chân vàng của SIM bằng vải khô mềm.", "Lắp lại SIM đúng chiều, đẩy khay vào hết.", "Thử SIM trên máy khác hoặc thử SIM khác trên máy này."],
+      "warnings": ["Không dùng lực mạnh khi mở hoặc đóng khay SIM."],
+      "see_technician_if": ["SIM ổn trên máy khác nhưng máy này không nhận SIM nào - nghi hỏng đầu đọc SIM."]
+    },
+    {
+      "id": "KN-06", "category": "ket_noi", "title": "Mạng di động (4G/5G) chậm hoặc hay rớt", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["4G chậm", "5G", "dữ liệu di động", "mạng chậm", "3G"],
+      "tools": [],
+      "symptoms": ["Tải web hoặc video chậm", "Mạng tụt từ 4G xuống 3G", "Dữ liệu di động không hoạt động"],
+      "causes": ["Sóng yếu trong khu vực", "Chưa bật dữ liệu di động hoặc hết gói cước", "Cấu hình APN hoặc cài đặt mạng lỗi"],
+      "steps": ["Kiểm tra dữ liệu di động đã bật và còn gói cước.", "Bật tắt chế độ máy bay.", "Chọn chế độ mạng tự động (4G/5G).", "Thử di chuyển sang vị trí khác hoặc ra gần cửa sổ.", "Đặt lại cài đặt mạng hoặc liên hệ nhà mạng kiểm tra cấu hình."],
+      "warnings": [],
+      "see_technician_if": []
+    },
+    {
+      "id": "KN-07", "category": "ket_noi", "title": "Không nhận hoặc không gửi được SMS, OTP", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["tin nhắn", "SMS", "OTP", "không nhận mã", "không gửi tin nhắn"],
+      "tools": [],
+      "symptoms": ["Không nhận mã OTP", "Tin nhắn gửi đi báo lỗi hoặc chờ mãi"],
+      "causes": ["Sóng yếu", "Bộ nhớ tin nhắn đầy hoặc số tổng đài tin nhắn sai", "Ứng dụng tin nhắn mặc định bị lỗi", "Số điện thoại bị chặn dịch vụ"],
+      "steps": ["Kiểm tra sóng và bật tắt chế độ máy bay.", "Khởi động lại máy.", "Xóa bớt tin nhắn cũ, xóa cache ứng dụng Tin nhắn (Android).", "Kiểm tra tin nhắn rác hoặc danh sách chặn.", "Liên hệ nhà mạng nếu vẫn không nhận được."],
+      "warnings": ["Không chia sẻ mã OTP cho bất kỳ ai."],
+      "see_technician_if": []
+    },
+    {
+      "id": "KN-08", "category": "ket_noi", "title": "Phát Wi-Fi (hotspot) không hoạt động", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["hotspot", "phát wifi", "chia sẻ mạng", "tethering"],
+      "tools": [],
+      "symptoms": ["Thiết bị khác không thấy hoặc không kết nối được", "Kết nối được nhưng không có mạng"],
+      "causes": ["Chưa bật dữ liệu di động hoặc chưa đăng ký gói hỗ trợ chia sẻ", "Chế độ tiết kiệm pin tự tắt hotspot", "Sai mật khẩu hoặc băng tần không tương thích"],
+      "steps": ["Bật dữ liệu di động và kiểm tra gói cước có cho phép chia sẻ.", "Tắt chế độ tiết kiệm pin.", "Tắt rồi bật lại hotspot, thử đổi băng tần 2.4GHz.", "Thử đổi tên và mật khẩu hotspot.", "Khởi động lại cả hai thiết bị."],
+      "warnings": [],
+      "see_technician_if": []
+    },
+    {
+      "id": "KN-09", "category": "ket_noi", "title": "GPS định vị sai hoặc không bắt được", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["GPS", "định vị", "bản đồ sai", "không bắt được vị trí"],
+      "tools": [],
+      "symptoms": ["Vị trí trên bản đồ lệch hoặc nhảy", "Mất nhiều thời gian mới xác định được vị trí"],
+      "causes": ["Dịch vụ vị trí tắt hoặc ở chế độ tiết kiệm", "Đang ở trong nhà, tòa nhà che sóng", "Ứng dụng bản đồ lỗi hoặc la bàn chưa hiệu chuẩn"],
+      "steps": ["Bật Vị trí và chọn chế độ độ chính xác cao.", "Ra nơi thoáng, chờ vài phút.", "Hiệu chuẩn la bàn bằng cách vẽ hình số 8 với máy (trong ứng dụng bản đồ).", "Tháo ốp có kim loại hoặc nam châm, cập nhật ứng dụng bản đồ.", "Khởi động lại máy."],
+      "warnings": [],
+      "see_technician_if": ["Ngoài trời thoáng đãng vẫn không bắt được vị trí sau mọi bước."]
+    },
+    {
+      "id": "KN-10", "category": "ket_noi", "title": "NFC, thanh toán chạm không hoạt động", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["NFC", "thanh toán chạm", "quẹt thẻ", "ví điện tử"],
+      "tools": [],
+      "symptoms": ["Chạm vào máy POS hoặc thẻ không nhận", "Không thấy tùy chọn NFC"],
+      "causes": ["NFC chưa bật", "Chạm sai vị trí ăng-ten NFC trên máy", "Ốp dày hoặc có miếng kim loại, thẻ phía sau", "Ứng dụng thanh toán chưa đặt làm mặc định"],
+      "steps": ["Bật NFC trong Cài đặt kết nối (Android).", "Đặt phần ăng-ten NFC (thường ở phía sau, gần camera hoặc giữa lưng máy) sát đầu đọc, giữ yên 1-2 giây.", "Tháo ốp, bỏ thẻ và vật kim loại phía sau máy.", "Đặt ứng dụng thanh toán mặc định và kiểm tra thẻ đã được thêm đúng."],
+      "warnings": [],
+      "see_technician_if": ["Không có tùy chọn NFC dù máy có hỗ trợ NFC, hoặc NFC không bao giờ nhận."]
+    },
+    {
+      "id": "AT-01", "category": "am_thanh_camera", "title": "Loa ngoài nhỏ, rè hoặc không có tiếng", "platform": "all", "difficulty": 2, "time_min": 10,
+      "keywords": ["loa nhỏ", "loa rè", "mất tiếng", "loa ngoài"],
+      "tools": ["Bàn chải lông mềm khô"],
+      "symptoms": ["Âm thanh nhỏ hoặc rè dù đã tăng âm lượng", "Không nghe được nhạc, video, chuông"],
+      "causes": ["Bụi bẩn bám lưới loa", "Đang bật chế độ im lặng hoặc kết nối Bluetooth", "Âm lượng phương tiện bị hạ thấp"],
+      "steps": ["Tăng âm lượng phương tiện, kiểm tra chế độ im lặng.", "Tắt Bluetooth để chắc chắn âm thanh không đi sang thiết bị khác.", "Khởi động lại máy.", "Dùng bàn chải mềm khô quét nhẹ lưới loa."],
+      "warnings": ["Không dùng vật nhọn chọc vào lưới loa, không dùng khí nén."],
+      "see_technician_if": ["Loa vẫn rè hoặc im lặng sau khi vệ sinh - nghi hỏng loa."]
+    },
+    {
+      "id": "AT-02", "category": "am_thanh_camera", "title": "Loa thoại (nghe cuộc gọi) nhỏ hoặc không nghe được", "platform": "all", "difficulty": 2, "time_min": 10,
+      "keywords": ["loa trong", "nghe gọi nhỏ", "loa thoại", "không nghe được cuộc gọi"],
+      "tools": ["Bàn chải lông mềm khô"],
+      "symptoms": ["Áp tai không nghe rõ người gọi", "Chỉ nghe được khi bật loa ngoài"],
+      "causes": ["Bụi hoặc dầu bám lưới loa thoại phía trên màn hình", "Miếng dán che lỗ loa", "Ốp hoặc phụ kiện che loa"],
+      "steps": ["Tăng âm lượng cuộc gọi trong lúc đang gọi.", "Kiểm tra miếng dán và ốp có che lỗ loa thoại không.", "Vệ sinh lưới loa thoại bằng bàn chải mềm khô.", "Khởi động lại máy và thử gọi lại."],
+      "warnings": ["Không chọc vật nhọn vào lỗ loa."],
+      "see_technician_if": ["Vẫn không nghe được dù đã vệ sinh, trong khi loa ngoài vẫn bình thường."]
+    },
+    {
+      "id": "AT-03", "category": "am_thanh_camera", "title": "Người khác không nghe thấy mình (lỗi mic)", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["mic", "micro", "không nghe tiếng mình", "mic lỗi"],
+      "tools": ["Bàn chải lông mềm khô"],
+      "symptoms": ["Người gọi báo không nghe hoặc nghe rất nhỏ", "Ghi âm hoặc quay video không có tiếng"],
+      "causes": ["Lỗ mic bị bụi che hoặc bị ốp che", "Ứng dụng chưa được cấp quyền micro", "Đang kết nối tai nghe Bluetooth"],
+      "steps": ["Kiểm tra quyền micro của ứng dụng đang gọi hoặc ghi âm.", "Tắt Bluetooth để chắc chắn mic của máy được sử dụng.", "Tháo ốp, vệ sinh lỗ mic bằng bàn chải mềm khô.", "Thử ghi âm bằng ứng dụng mặc định để kiểm tra từng mic (mic dưới, mic gần camera)."],
+      "warnings": [],
+      "see_technician_if": ["Cả mic dưới và mic gần camera đều không thu được âm thanh."]
+    },
+    {
+      "id": "AT-04", "category": "am_thanh_camera", "title": "Tai nghe có dây không nhận hoặc chỉ nghe một bên", "platform": "all", "difficulty": 2, "time_min": 10,
+      "keywords": ["tai nghe có dây", "tai nghe một bên", "jack tai nghe", "tai nghe không nhận"],
+      "tools": ["Tai nghe khác để thử", "Tăm nhựa hoặc bàn chải mềm"],
+      "symptoms": ["Máy không nhận tai nghe, âm thanh vẫn ra loa ngoài", "Chỉ nghe được một bên tai"],
+      "causes": ["Tai nghe hoặc jack cắm hỏng", "Cổng cắm bám bụi", "Cân bằng âm thanh trái phải bị chỉnh lệch"],
+      "steps": ["Thử tai nghe trên thiết bị khác để loại trừ lỗi tai nghe.", "Kiểm tra cài đặt cân bằng âm thanh trái/phải trong Trợ năng.", "Tắt nguồn và vệ sinh cổng cắm nhẹ nhàng.", "Khởi động lại máy rồi cắm lại tai nghe."],
+      "warnings": ["Không dùng vật kim loại chọc vào cổng tai nghe."],
+      "see_technician_if": ["Nhiều tai nghe khác nhau đều không nhận trên máy này."]
+    },
+    {
+      "id": "AT-05", "category": "am_thanh_camera", "title": "Không có tiếng khi xem video hoặc nghe nhạc", "platform": "all", "difficulty": 1, "time_min": 5,
+      "keywords": ["mất tiếng", "không có tiếng", "video không tiếng", "âm lượng phương tiện"],
+      "tools": [],
+      "symptoms": ["Video có hình nhưng không có tiếng", "Chuông gọi vẫn kêu nhưng nhạc thì im"],
+      "causes": ["Âm lượng phương tiện bị hạ về 0", "Đang bật chế độ im lặng hoặc Không làm phiền", "Âm thanh đang phát ra thiết bị Bluetooth khác", "Ứng dụng bị tắt tiếng riêng"],
+      "steps": ["Tăng âm lượng phương tiện (không chỉ âm lượng chuông).", "Tắt chế độ im lặng.", "Tắt Bluetooth hoặc ngắt thiết bị Bluetooth đang kết nối.", "Kiểm tra tiếng trong chính ứng dụng (nút loa trên video).", "Khởi động lại máy."],
+      "warnings": [],
+      "see_technician_if": ["Không có tiếng ở mọi ứng dụng và mọi chế độ sau khi khởi động lại."]
+    },
+    {
+      "id": "AT-06", "category": "am_thanh_camera", "title": "Camera chụp mờ, không lấy nét", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["camera mờ", "chụp mờ", "không lấy nét", "ống kính bẩn"],
+      "tools": ["Khăn microfiber"],
+      "symptoms": ["Ảnh mờ hoặc có quầng sáng", "Lấy nét chậm hoặc không lấy nét được"],
+      "causes": ["Ống kính bám dấu vân tay hoặc bụi", "Ốp hoặc miếng dán che một phần ống kính", "Kính camera bị xước hoặc đọng hơi nước"],
+      "steps": ["Lau ống kính bằng khăn microfiber khô.", "Tháo ốp và kiểm tra có che ống kính không.", "Nếu đọng hơi nước, để máy nơi khô thoáng một lúc.", "Thử các chế độ chụp khác nhau và khởi động lại ứng dụng camera."],
+      "warnings": ["Không dùng giấy thô hoặc vật cứng lau ống kính."],
+      "see_technician_if": ["Ảnh vẫn mờ sau khi lau sạch - nghi kính camera trầy hoặc hỏng mô-đun camera."]
+    },
+    {
+      "id": "AT-07", "category": "am_thanh_camera", "title": "Camera đen màn hình hoặc báo không mở được camera", "platform": "all", "difficulty": 1, "time_min": 10,
+      "keywords": ["camera lỗi", "camera đen", "không mở được camera", "lỗi camera"],
+      "tools": [],
+      "symptoms": ["Mở camera chỉ thấy màn hình đen", "Báo lỗi Không thể kết nối camera"],
+      "causes": ["Ứng dụng camera bị treo hoặc lỗi cache", "Ứng dụng khác đang dùng camera", "Lỗi phần mềm sau cập nhật"],
+      "steps": ["Đóng hẳn ứng dụng camera và mở lại.", "Đóng các ứng dụng khác có thể đang dùng camera.", "Android: xóa cache của ứng dụng camera.", "Khởi động lại máy và cập nhật hệ điều hành."],
+      "warnings": [],
+      "see_technician_if": ["Mọi ứng dụng đều không dùng được camera sau khi khởi động lại - nghi hỏng mô-đun camera."]
+    },
+    {
+      "id": "AT-08", "category": "am_thanh_camera", "title": "Đèn flash không sáng", "platform": "all", "difficulty": 1, "time_min": 5,
+      "keywords": ["đèn flash", "đèn pin", "flash không sáng", "đèn LED"],
+      "tools": [],
+      "symptoms": ["Bật đèn pin không sáng", "Chụp ảnh không có đèn flash"],
+      "causes": ["Pin thấp hoặc đang bật tiết kiệm pin", "Máy quá nóng", "Ứng dụng camera đang chiếm đèn", "Lỗi phần mềm"],
+      "steps": ["Sạc pin và tắt chế độ tiết kiệm pin.", "Để máy nguội nếu đang nóng.", "Đóng ứng dụng camera rồi bật lại đèn pin.", "Khởi động lại máy."],
+      "warnings": [],
+      "see_technician_if": ["Đèn không sáng sau khi pin ổn định và máy nguội - nghi hỏng đèn LED."]
+    },
+    {
+      "id": "CUNG-01", "category": "nut_cong", "title": "Nút nguồn hoặc nút âm lượng bấm kẹt, không ăn", "platform": "all", "difficulty": 2, "time_min": 15,
+      "keywords": ["nút nguồn", "nút âm lượng", "nút kẹt", "nút liệt", "bấm không ăn"],
+      "tools": ["Tăm bông", "Cồn isopropyl 70% (lượng rất ít)", "Bàn chải mềm"],
+      "symptoms": ["Nút cứng, không nảy lại", "Bấm nhiều lần mới nhận"],
+      "causes": ["Bụi bẩn tích tụ quanh nút", "Ốp lưng ép vào nút", "Lỗi phần mềm tạm thời"],
+      "steps": ["Tháo ốp lưng và thử lại.", "Quét sạch bụi quanh viền nút bằng bàn chải mềm.", "Dùng tăm bông hơi ẩm cồn isopropyl lau quanh viền nút, không để cồn chảy vào bên trong.", "Trong lúc chờ sửa, dùng nút ảo thay thế (Trợ năng Android hoặc AssistiveTouch trên iPhone)."],
+      "warnings": ["Không cạy, không dùng lực mạnh ấn nút liên tục."],
+      "see_technician_if": ["Nút vẫn kẹt hoặc không ăn sau khi vệ sinh."]
+    },
+    {
+      "id": "CUNG-02", "category": "nut_cong", "title": "Khay SIM bị kẹt, không mở được", "platform": "all", "difficulty": 2, "time_min": 10,
+      "keywords": ["khay SIM", "kẹt SIM", "không mở được khay SIM", "que lấy SIM"],
+      "tools": ["Que lấy SIM chính hãng hoặc kẹp giấy thẳng"],
+      "symptoms": ["Chọc que vào lỗ nhỏ nhưng khay không bật ra", "Khay ra một nửa rồi kẹt"],
+      "causes": ["Chọc không đúng vị trí hoặc không vuông góc", "Khay bị cong hoặc dính bụi", "Khay bị gỉ hoặc bị ẩm"],
+      "steps": ["Tắt máy.", "Chọc que vuông góc vào lỗ nhỏ cạnh khay, đẩy dứt khoát nhưng vừa lực.", "Dùng móng tay hoặc nhíp nhựa kéo nhẹ khay ra thẳng.", "Kiểm tra khay và SIM có bị cong không, lắp lại đúng hướng."],
+      "warnings": ["Không cạy hay dùng lực mạnh làm cong khay hoặc kẹt đầu đọc SIM."],
+      "see_technician_if": ["Khay kẹt cứng hoặc bị cong, không lấy ra được bằng lực nhẹ."]
+    },
+    {
+      "id": "CUNG-03", "category": "nut_cong", "title": "Vân tay hoặc Face ID không nhận, nhận chậm", "platform": "all", "difficulty": 1, "time_min": 15,
+      "keywords": ["vân tay", "Face ID", "mở khóa", "không nhận vân tay", "sinh trắc học"],
+      "tools": ["Khăn mềm"],
+      "symptoms": ["Quét vân tay nhiều lần mới mở được", "Face ID báo không nhận ra khuôn mặt"],
+      "causes": ["Ngón tay hoặc cảm biến bẩn, ướt", "Miếng dán không tương thích với cảm biến vân tay trong màn hình", "Dữ liệu vân tay hoặc khuôn mặt đăng ký chưa đủ"],
+      "steps": ["Lau sạch cảm biến và ngón tay.", "Tháo miếng dán nếu nghi che hoặc không tương thích với cảm biến vân tay trong màn hình.", "Xóa và đăng ký lại vân tay, đăng ký thêm vài lần cho cùng một ngón.", "Face ID: đảm bảo không bị che mặt, đăng ký lại nếu cần.", "Cập nhật hệ điều hành."],
+      "warnings": [],
+      "see_technician_if": ["Không đăng ký được vân tay hoặc Face ID báo lỗi phần cứng."]
+    },
+    {
+      "id": "CUNG-04", "category": "nut_cong", "title": "Máy rơi vào nước hoặc bị ướt (sơ cứu)", "platform": "all", "difficulty": 3, "time_min": 30,
+      "keywords": ["rơi nước", "vào nước", "máy ướt", "ngâm nước", "sơ cứu"],
+      "tools": ["Khăn khô mềm"],
+      "symptoms": ["Máy bị ngấm nước hoặc ướt do mưa, đổ nước", "Màn hình có vệt hoặc hơi nước bên trong"],
+      "causes": ["Ngâm nước, mưa lớn, đổ nước lên máy", "Độ ngăn nước của máy suy giảm theo thời gian"],
+      "steps": ["Lấy máy ra khỏi nước ngay, tắt nguồn.", "Không cắm sạc, không bấm nút liên tục.", "Rút SIM và thẻ nhớ, lau khô bên ngoài bằng khăn mềm.", "Để máy nơi khô thoáng, cổng sạc hướng xuống, chờ ít nhất 24-48 giờ.", "Sau khi khô, mang máy đến trung tâm bảo hành để kiểm tra sớm."],
+      "warnings": ["Không dùng máy sấy, không dùng gạo, không dùng khí nén. Nước làm ăn mòn bo mạch dần theo thời gian, nên cần kiểm tra sớm."],
+      "see_technician_if": ["Máy từng vào nước đáng kể, dù có vẻ vẫn hoạt động bình thường."]
+    }
+  ]
+}

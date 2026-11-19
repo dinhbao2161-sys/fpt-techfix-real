@@ -132,3 +132,37 @@ test('validateIssueForm validates required fields properly', () => {
   assert.equal(valid.isValid, true);
   assert.equal(Object.keys(valid.errors).length, 0);
 });
+
+test('filterIssues matches multi-platform phone issues and fault code', () => {
+  const dualPhoneIssue: Issue = {
+    id: 'PIN-01',
+    code: 'PIN-01',
+    title: 'Sạc không vào hoặc sạc rất chậm',
+    platform: 'hardware',
+    platforms: ['iphone', 'android'],
+    category: 'battery',
+    severity: 'medium',
+    estimatedTime: '10 phút',
+    summary: 'Hướng dẫn kiểm tra cổng sạc và cáp sạc.',
+    symptoms: ['Cắm sạc không nhận'],
+    causes: ['Cổng sạc bám bụi'],
+    steps: [{ stepNumber: 1, title: 'Thử cáp khác', instructions: 'Thử cáp và củ sạc chính hãng.' }],
+    tags: ['PIN-01', 'sạc chậm'],
+    author: 'Sửa điện thoại tại nhà',
+    createdAt: '2026-11-19',
+    helpfulCount: 1,
+  };
+
+  assert.equal(
+    filterIssues([dualPhoneIssue], { query: 'PIN-01', platform: 'iphone', category: 'all', severity: 'all' }).length,
+    1
+  );
+  assert.equal(
+    filterIssues([dualPhoneIssue], { query: '', platform: 'android', category: 'battery', severity: 'all' }).length,
+    1
+  );
+  assert.equal(
+    filterIssues([dualPhoneIssue], { query: '', platform: 'windows', category: 'all', severity: 'all' }).length,
+    0
+  );
+});

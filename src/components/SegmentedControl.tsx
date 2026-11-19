@@ -37,7 +37,7 @@ const CATEGORIES: { id: Category; label: string; icon: React.ReactNode }[] = [
   { id: 'battery', label: 'Nguồn & Tế bào pin', icon: <BatteryCharging className="w-3.5 h-3.5" /> },
   { id: 'network', label: 'Mạng viễn thông & Wi-Fi', icon: <Wifi className="w-3.5 h-3.5" /> },
   { id: 'security', label: 'Khóa bảo mật & Mật khẩu', icon: <ShieldAlert className="w-3.5 h-3.5" /> },
-  { id: 'hardware', label: 'Bo mạch & Chipset', icon: <Cpu className="w-3.5 h-3.5" /> },
+  { id: 'hardware', label: 'Âm thanh, Camera & Phần cứng', icon: <Cpu className="w-3.5 h-3.5" /> },
 ];
 
 export const SegmentedControl: React.FC<SegmentedControlProps> = ({

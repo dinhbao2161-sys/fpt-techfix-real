@@ -22,8 +22,12 @@ export function filterIssues(issues: Issue[], options: IssueFilterOptions): Issu
 
   return issues.filter((issue) => {
     // 1. Platform filter
-    if (platform !== 'all' && issue.platform !== platform) {
-      return false;
+    if (platform !== 'all') {
+      const matchesPrimary = issue.platform === platform;
+      const matchesSecondary = Array.isArray(issue.platforms) && issue.platforms.includes(platform);
+      if (!matchesPrimary && !matchesSecondary) {
+        return false;
+      }
     }
 
     // 2. Category filter
@@ -41,8 +45,9 @@ export function filterIssues(issues: Issue[], options: IssueFilterOptions): Issu
       return false;
     }
 
-    // 5. Query search (matched against title, summary, symptoms, causes, tags, and step titles)
+    // 5. Query search (matched against code, title, summary, symptoms, causes, tags, and step titles)
     if (cleanQuery) {
+      const matchCode = issue.code ? removeVietnameseTones(issue.code).includes(cleanQuery) : false;
       const matchTitle = removeVietnameseTones(issue.title).includes(cleanQuery);
       const matchSummary = removeVietnameseTones(issue.summary).includes(cleanQuery);
       const matchTags = issue.tags.some((tag) => removeVietnameseTones(tag).includes(cleanQuery));
@@ -54,7 +59,7 @@ export function filterIssues(issues: Issue[], options: IssueFilterOptions): Issu
           removeVietnameseTones(st.instructions).includes(cleanQuery)
       );
 
-      if (!matchTitle && !matchSummary && !matchTags && !matchSymptoms && !matchCauses && !matchSteps) {
+      if (!matchCode && !matchTitle && !matchSummary && !matchTags && !matchSymptoms && !matchCauses && !matchSteps) {
         return false;
       }
     }

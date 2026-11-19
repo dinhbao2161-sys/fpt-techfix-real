@@ -54,8 +54,18 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   const progressPercent = Math.round((completedCount / issue.steps.length) * 100);
 
   const handleCopyGuide = () => {
+    const warningsText =
+      issue.warnings && issue.warnings.length > 0
+        ? `\n\n--- LƯU Ý AN TOÀN ---\n${issue.warnings.map((w) => `! ${w}`).join('\n')}`
+        : '';
+
+    const techText =
+      issue.seeTechnicianIf && issue.seeTechnicianIf.length > 0
+        ? `\n\n--- KHI NÀO NÊN MANG RA THỢ ---\n${issue.seeTechnicianIf.map((t) => `• ${t}`).join('\n')}`
+        : '';
+
     const textContent = `[TechCare Knowledge Base]
-TIÊU ĐỀ: ${issue.title}
+TIÊU ĐỀ: ${issue.code ? `[${issue.code}] ` : ''}${issue.title}
 NỀN TẢNG: ${issue.platform.toUpperCase()}
 THỜI GIAN DỰ KIẾN: ${issue.estimatedTime}
 
@@ -70,7 +80,7 @@ ${issue.steps
         s.warning ? `\n! Cảnh báo: ${s.warning}` : ''
       }`
   )
-  .join('\n\n')}
+  .join('\n\n')}${warningsText}${techText}
 
 Trích xuất từ Kho Kiến Thức Kỹ Thuật TechCare.`;
 
@@ -132,7 +142,7 @@ Trích xuất từ Kho Kiến Thức Kỹ Thuật TechCare.`;
             </span>
             <div className="truncate">
               <span className="text-[11px] font-mono uppercase tracking-widest text-[#F97316] font-semibold">
-                Quy Trình Khắc Phục Lỗi
+                {issue.code ? `Mã lỗi ${issue.code} · Quy Trình Khắc Phục` : 'Quy Trình Khắc Phục Lỗi'}
               </span>
               <h2 className="text-sm sm:text-base font-bold text-[#FFFFFF] truncate font-['Manrope']">
                 {issue.title}
@@ -387,6 +397,45 @@ Trích xuất từ Kho Kiến Thức Kỹ Thuật TechCare.`;
               })}
             </div>
           </div>
+
+          {/* Issue-level Safety Warnings */}
+          {issue.warnings && issue.warnings.length > 0 && (
+            <div className="p-5 rounded-2xl bg-[#EF4444]/10 border border-[#EF4444]/30 space-y-2.5">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-[#EF4444] flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>Lưu ý an toàn quan trọng</span>
+              </h3>
+              <ul className="space-y-1.5 text-xs sm:text-sm text-[#FCA5A5]">
+                {issue.warnings.map((warn, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="font-bold">!</span>
+                    <span>{warn}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* When to see a technician */}
+          {issue.seeTechnicianIf && issue.seeTechnicianIf.length > 0 && (
+            <div className="p-5 rounded-2xl bg-[#F97316]/10 border border-[#F97316]/30 space-y-2.5">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-[#F97316] flex items-center gap-2">
+                <Wrench className="w-4 h-4 shrink-0" />
+                <span>Khi nào nên mang đến trung tâm sửa chữa</span>
+              </h3>
+              <ul className="space-y-1.5 text-xs sm:text-sm text-[#FED7AA]">
+                {issue.seeTechnicianIf.map((cond, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-[#F97316] font-bold">•</span>
+                    <span>{cond}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[11px] text-[#A0A0A0] pt-1 border-t border-white/[0.08]">
+                Thông tin mang tính tham khảo cho người dùng phổ thông. Không tự mở máy, không tự tháo pin.
+              </p>
+            </div>
+          )}
 
           {/* Reference Link if available */}
           {issue.sourceUrl && (

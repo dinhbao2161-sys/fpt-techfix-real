@@ -111,8 +111,14 @@ export default function App() {
       hardware: 0,
     };
     for (const issue of issues) {
-      if (counts[issue.platform] !== undefined) {
-        counts[issue.platform]++;
+      const targetPlatforms =
+        Array.isArray(issue.platforms) && issue.platforms.length > 0
+          ? issue.platforms
+          : [issue.platform];
+      for (const p of targetPlatforms) {
+        if (counts[p] !== undefined) {
+          counts[p]++;
+        }
       }
     }
     return counts;

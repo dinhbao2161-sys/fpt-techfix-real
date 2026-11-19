@@ -21,8 +21,10 @@ export interface StepGuide {
 
 export interface Issue {
   id: string;
+  code?: string;
   title: string;
   platform: 'iphone' | 'android' | 'windows' | 'mac' | 'hardware';
+  platforms?: ('iphone' | 'android' | 'windows' | 'mac' | 'hardware')[];
   category: 'system' | 'screen' | 'battery' | 'network' | 'hardware' | 'security';
   severity: Severity;
   estimatedTime: string;
@@ -31,6 +33,8 @@ export interface Issue {
   causes: string[];
   steps: StepGuide[];
   requiredTools?: string[];
+  warnings?: string[];
+  seeTechnicianIf?: string[];
   tags: string[];
   sourceUrl?: string;
   author: string;
